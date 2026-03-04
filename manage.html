@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Management | Prometheus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .manage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 32px; padding-bottom: 50px; }
+        .form-card { height: 100%; display: flex; flex-direction: column; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+        input, select, textarea { 
+            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); 
+            background: rgba(255,255,255,0.05); color: var(--text-main); font-family: inherit; font-size: 0.85rem;
+        }
+        button.submit-btn { 
+            background: var(--primary-color); color: white; border: none; padding: 10px 20px; 
+            border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s; margin-top: auto;
+        }
+        button.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3); }
+        .success-msg { color: var(--success-color); font-size: 0.75rem; font-weight: 700; margin-top: 10px; display: none; }
+        .section-title { grid-column: 1 / -1; margin-top: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--card-border); color: var(--primary-color); font-size: 1.2rem; font-weight: 800; }
+    </style>
+</head>
+<body class="page-container">
+    <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 10000; display: flex; align-items: center; justify-content: center; color: white; font-family: 'Inter', sans-serif;">
+        <div style="text-align: center;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #10b981; margin-bottom: 1rem;"></i>
+            <p>Verifying Management Access...</p>
+        </div>
+    </div>
+
+    <header class="header-section">
+        <h1>Management Terminal</h1>
+        <p>Real-time data injection and metric calibration for the entire suite.</p>
+    </header>
+
+    <div class="manage-grid">
+        <!-- EXECUTIVE SECTION -->
+        <div class="section-title">EXECUTIVE & GENERAL</div>
+        
+        <section class="card form-card animate-fade-in stagger-1">
+            <div class="card-title">UPDATE KPIs <i class="fas fa-chart-line"></i></div>
+            <form id="exec-kpi-form">
+                <div class="form-group">
+                    <label>Ecosystem Market Value ($M)</label>
+                    <input type="number" step="0.1" name="marketValue" placeholder="842.5">
+                </div>
+                <div class="form-group">
+                    <label>Annual Recurring Revenue ($M)</label>
+                    <input type="number" step="0.1" name="arr" placeholder="14.2">
+                </div>
+                <button type="submit" class="submit-btn">UPDATE METRICS</button>
+                <div class="success-msg" id="exec-success">Data pushed successfully!</div>
+            </form>
+        </section>
+
+        <section class="card form-card animate-fade-in stagger-2">
+            <div class="card-title">ADD PRODUCT <i class="fas fa-plus-circle"></i></div>
+            <form id="product-form">
+                <div class="form-group"><label>Name</label><input type="text" name="name" required></div>
+                <div class="form-group"><label>Category</label><input type="text" name="category" required></div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status"><option>Healthy</option><option>Monitoring</option><option>Critical</option></select>
+                </div>
+                <button type="submit" class="submit-btn">ADD PRODUCT</button>
+                <div class="success-msg" id="product-success">Product registered!</div>
+            </form>
+        </section>
+
+        <section class="card form-card animate-fade-in stagger-3">
+            <div class="card-title">CALIBRATE RADAR <i class="fas fa-bullseye"></i></div>
+            <form id="radar-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group"><label>Growth</label><input type="number" name="growth" placeholder="85"></div>
+                    <div class="form-group"><label>Retention</label><input type="number" name="retention" placeholder="92"></div>
+                    <div class="form-group"><label>Profitability</label><input type="number" name="profitability" placeholder="78"></div>
+                    <div class="form-group"><label>Health</label><input type="number" name="health" placeholder="95"></div>
+                </div>
+                <div class="form-group"><label>Market Presence</label><input type="number" name="market" placeholder="88"></div>
+                <button type="submit" class="submit-btn">PUSH CALIBRATION</button>
+                <div class="success-msg" id="radar-success">Radar sync complete!</div>
+            </form>
+        </section>
+
+        <!-- SALES SECTION -->
+        <div class="section-title">SALES & REVENUE</div>
+
+        <section class="card form-card animate-fade-in stagger-3">
+            <div class="card-title">LOG TRANSACTION <i class="fas fa-cash-register"></i></div>
+            <form id="sales-form">
+                <div class="form-group"><label>Customer</label><input type="text" name="customer" required></div>
+                <div class="form-group"><label>Product</label><input type="text" name="product" required></div>
+                <div class="form-group"><label>Amount ($)</label><input type="number" name="amount" required></div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select name="type"><option>Subscription</option><option>One-time Purchase</option><option>Product Upgrade</option></select>
+                </div>
+                <button type="submit" class="submit-btn">LOG TRANSACTION</button>
+                <div class="success-msg" id="sales-success">Transaction recorded!</div>
+            </form>
+        </section>
+
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">CALIBRATE GLOBAL REVENUE <i class="fas fa-globe-americas"></i></div>
+            <form id="sales-geo-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group"><label>New York ($)</label><input type="number" name="ny" placeholder="42500"></div>
+                    <div class="form-group"><label>London ($)</label><input type="number" name="london" placeholder="31000"></div>
+                    <div class="form-group"><label>Tokyo ($)</label><input type="number" name="tokyo" placeholder="28500"></div>
+                    <div class="form-group"><label>Berlin ($)</label><input type="number" name="berlin" placeholder="21500"></div>
+                </div>
+                <button type="submit" class="submit-btn">PUSH GLOBAL SYNC</button>
+                <div class="success-msg" id="sales-geo-success">Geospatial sync complete!</div>
+            </form>
+        </section>
+
+        <!-- MARKETING SECTION -->
+        <div class="section-title">MARKETING & DEMAND</div>
+
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">INJECT ACQUISITION <i class="fas fa-user-plus"></i></div>
+            <form id="marketing-acq-form">
+                <div class="form-group"><label>Notification Text</label><input type="text" name="text" required placeholder="New Signup: John Doe"></div>
+                <div class="form-group">
+                    <label>Icon</label>
+                    <select name="icon"><option value="user-circle">User</option><option value="download">Download</option><option value="bolt">Alert</option></select>
+                </div>
+                <button type="submit" class="submit-btn">SEND PULSE</button>
+                <div class="success-msg" id="marketing-acq-success">Pulse sent!</div>
+            </form>
+        </section>
+
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">CALIBRATE FUNNEL <i class="fas fa-filter"></i></div>
+            <form id="marketing-funnel-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group"><label>Impressions</label><input type="number" name="impressions" placeholder="128000"></div>
+                    <div class="form-group"><label>Clicks</label><input type="number" name="clicks" placeholder="24000"></div>
+                    <div class="form-group"><label>Demos</label><input type="number" name="demos" placeholder="8500"></div>
+                    <div class="form-group"><label>Signups</label><input type="number" name="signups" placeholder="3240"></div>
+                </div>
+                <button type="submit" class="submit-btn">SYNC FUNNEL</button>
+                <div class="success-msg" id="marketing-funnel-success">Funnel synchronized!</div>
+            </form>
+        </section>
+
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">ADD CONTENT ASSET <i class="fas fa-file-alt"></i></div>
+            <form id="marketing-content-form">
+                <div class="form-group"><label>Title</label><input type="text" name="title" required></div>
+                <div class="form-group"><label>Channel</label><input type="text" name="channel" required></div>
+                <div class="form-group"><label>Engagement %</label><input type="text" name="engagement" required placeholder="5.2%"></div>
+                <button type="submit" class="submit-btn">REGISTER ASSET</button>
+                <div class="success-msg" id="marketing-content-success">Asset registered!</div>
+            </form>
+        </section>
+
+        <!-- OPERATIONS & SUPPORT -->
+        <div class="section-title">OPERATIONS & SUPPORT</div>
+
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">INJECT SYSTEM LOG <i class="fas fa-terminal"></i></div>
+            <form id="ops-log-form">
+                <div class="form-group">
+                    <label>Level</label>
+                    <select name="level"><option>INFO</option><option>WARN</option><option>ERROR</option></select>
+                </div>
+                <div class="form-group"><label>Message</label><input type="text" name="message" required></div>
+                <button type="submit" class="submit-btn">PUSH LOG</button>
+                <div class="success-msg" id="ops-log-success">Log pushed!</div>
+            </form>
+        </section>
+
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">CALIBRATE SYSTEM MATRIX <i class="fas fa-project-diagram"></i></div>
+            <form id="ops-matrix-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group"><label>Avg Latency (ms)</label><input type="number" name="latency" placeholder="142"></div>
+                    <div class="form-group"><label>Node-04 Load %</label><input type="number" name="n4load" placeholder="85"></div>
+                    <div class="form-group"><label>Node-04 Latency</label><input type="number" name="n4lat" placeholder="420"></div>
+                    <div class="form-group"><label>Node-04 Errors</label><input type="number" name="n4err" placeholder="15"></div>
+                </div>
+                <button type="submit" class="submit-btn">SYNC MATRIX</button>
+                <div class="success-msg" id="ops-matrix-success">Matrix synchronized!</div>
+            </form>
+        </section>
+
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">ADD CRITICAL TICKET <i class="fas fa-ticket-alt"></i></div>
+            <form id="support-ticket-form">
+                <div class="form-group"><label>Customer</label><input type="text" name="customer" required></div>
+                <div class="form-group"><label>Issue</label><input type="text" name="issue" required></div>
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select name="priority"><option>Critical</option><option>High</option><option>Normal</option></select>
+                </div>
+                <button type="submit" class="submit-btn">OPEN TICKET</button>
+                <div class="success-msg" id="support-ticket-success">Ticket opened!</div>
+            </form>
+        </section>
+
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">CALIBRATE SENTIMENT <i class="fas fa-brain"></i></div>
+            <form id="support-sentiment-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group"><label>Delighted %</label><input type="number" name="del" placeholder="65"></div>
+                    <div class="form-group"><label>Satisfied %</label><input type="number" name="sat" placeholder="22"></div>
+                    <div class="form-group"><label>Neutral %</label><input type="number" name="neu" placeholder="10"></div>
+                    <div class="form-group"><label>Frustrated %</label><input type="number" name="fru" placeholder="3"></div>
+                </div>
+                <button type="submit" class="submit-btn">SYNC ANALYTICS</button>
+                <div class="success-msg" id="support-sentiment-success">Sentiment synchronized!</div>
+            </form>
+        </section>
+
+        <!-- PAYROLL SECTION -->
+        <div class="section-title">PAYROLL & SALARIES</div>
+
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">UPDATE PAYMENT STATUS <i class="fas fa-money-check-alt"></i></div>
+            <form id="payroll-status-form">
+                <div class="form-group">
+                    <label>Employee ID</label>
+                    <select name="employeeId" id="payroll-employee-select">
+                        <option value="EMP-001">EMP-001 (Employee ABC)</option>
+                        <option value="EMP-002">EMP-002 (Jane Smith)</option>
+                        <option value="EMP-003">EMP-003 (Michael Chen)</option>
+                        <option value="EMP-004">EMP-004 (Sarah Johnson)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>New Status</label>
+                    <select name="status">
+                        <option value="PENDING">PENDING</option>
+                        <option value="DISBURSED">DISBURSED</option>
+                        <option value="SETTLED">SETTLED</option>
+                    </select>
+                </div>
+                <button type="submit" class="submit-btn">UPDATE STATUS</button>
+                <div class="success-msg" id="payroll-success">Status updated!</div>
+            </form>
+        </section>
+
+        <!-- FINANCE SECTION -->
+        <div class="section-title">FINANCE & STABILITY</div>
+        <section class="card form-card animate-fade-in">
+            <div class="card-title">CALIBRATE FINANCIAL HEALTH <i class="fas fa-file-invoice-dollar"></i></div>
+            <form id="finance-health-form">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group"><label>Cash on Hand ($M)</label><input type="number" step="0.1" name="cash" placeholder="2.1"></div>
+                    <div class="form-group"><label>Monthly Burn ($k)</label><input type="number" name="burn" placeholder="420"></div>
+                </div>
+                <button type="submit" class="submit-btn">UPDATE RUNWAY</button>
+                <div class="success-msg" id="finance-health-success">Financials calibrated!</div>
+            </form>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
+    <script>
+        const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function checkAuth() {
+            const overlay = document.getElementById('auth-overlay');
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error || !session) {
+                    window.top.location.href = 'auth.html';
+                    return;
+                }
+                if (overlay) overlay.style.display = 'none';
+            } catch (err) {
+                window.top.location.href = 'auth.html';
+            }
+        }
+        checkAuth();
+
+        // Theme Sync Logic
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'THEME_UPDATE') {
+                applyTheme(event.data.theme);
+            }
+        });
+
+        // Fail-safe: Check localStorage directly
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) applyTheme(savedTheme);
+
+        const API_BASE = '/api';
+
+        function showSuccess(id) {
+            const el = document.getElementById(id);
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 3000);
+        }
+
+        async function postData(endpoint, data, successId, form) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error("No active session");
+
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    if(form) form.reset();
+                    showSuccess(successId);
+                } else {
+                    alert('Error: ' + (result.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Could not connect to the backend. Please ensure "npm run dev" is running in the backend folder.');
+            }
+        }
+
+        // Executive
+        document.getElementById('exec-kpi-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/executive/update', {
+                kpis: {
+                    marketValue: { value: parseFloat(fd.get('marketValue')) || 842.5, unit: 'M' },
+                    arr: { value: parseFloat(fd.get('arr')) || 14.2, unit: 'M' }
+                }
+            }, 'exec-success');
+        });
+
+        document.getElementById('product-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/executive/add-product', {
+                name: fd.get('name'), category: fd.get('category'), status: fd.get('status'), traction: 'New Entry'
+            }, 'product-success', e.target);
+        });
+
+        document.getElementById('radar-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/executive/update', {
+                radarChart: {
+                    labels: ["Growth", "Retention", "Profitability", "System Health", "Market Presence"],
+                    data: [
+                        parseInt(fd.get('growth')) || 85,
+                        parseInt(fd.get('retention')) || 92,
+                        parseInt(fd.get('profitability')) || 78,
+                        parseInt(fd.get('health')) || 95,
+                        parseInt(fd.get('market')) || 88
+                    ],
+                    targets: [90, 95, 85, 90, 95]
+                }
+            }, 'radar-success');
+        });
+
+        // Sales
+        document.getElementById('sales-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/sales/add-transaction', {
+                customer: fd.get('customer'), product: fd.get('product'), amount: parseInt(fd.get('amount')), type: fd.get('type')
+            }, 'sales-success', e.target);
+        });
+
+        document.getElementById('sales-geo-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/sales/update', {
+                geospatial: [
+                    { city: "New York", lat: 40.7128, lng: -74.0060, revenue: parseInt(fd.get('ny')) || 42500 },
+                    { city: "London", lat: 51.5074, lng: -0.1278, revenue: parseInt(fd.get('london')) || 31000 },
+                    { city: "Tokyo", lat: 35.6762, lng: 139.6503, revenue: parseInt(fd.get('tokyo')) || 28500 },
+                    { city: "Berlin", lat: 52.5200, lng: 13.4050, revenue: parseInt(fd.get('berlin')) || 21500 },
+                    { city: "Sydney", lat: -33.8688, lng: 151.2093, revenue: 12000 },
+                    { city: "San Francisco", lat: 37.7749, lng: -122.4194, revenue: 38000 }
+                ]
+            }, 'sales-geo-success');
+        });
+
+        // Marketing
+        document.getElementById('marketing-acq-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/marketing/add-acquisition', {
+                text: fd.get('text'), time: 'Just now', icon: fd.get('icon')
+            }, 'marketing-acq-success', e.target);
+        });
+
+        document.getElementById('marketing-funnel-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/marketing/update', {
+                conversionFunnel: {
+                    labels: ["Impressions", "Clicks", "Demos", "Signups"],
+                    data: [
+                        parseInt(fd.get('impressions')) || 128000,
+                        parseInt(fd.get('clicks')) || 24000,
+                        parseInt(fd.get('demos')) || 8500,
+                        parseInt(fd.get('signups')) || 3240
+                    ]
+                }
+            }, 'marketing-funnel-success');
+        });
+
+        document.getElementById('marketing-content-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/marketing/add-content', {
+                title: fd.get('title'), channel: fd.get('channel'), engagement: fd.get('engagement'), conversion: '0.0%', hot: true
+            }, 'marketing-content-success', e.target);
+        });
+
+        // Operations
+        document.getElementById('ops-log-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/operations/add-log', { level: fd.get('level'), message: fd.get('message') }, 'ops-log-success', e.target);
+        });
+
+        document.getElementById('ops-matrix-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/operations/update', {
+                kpis: {
+                    latency: { value: parseInt(fd.get('latency')) || 142, suffix: 'ms', label: 'AVERAGE SYSTEM LATENCY', trend: -12 }
+                },
+                serverMatrix: [
+                    { x: 45, y: 120, r: 5, label: "Node-01" },
+                    { x: 75, y: 310, r: 12, label: "Node-02 (High Load)" },
+                    { x: 30, y: 95, r: 4, label: "Node-03" },
+                    { x: parseInt(fd.get('n4load')) || 85, y: parseInt(fd.get('n4lat')) || 420, r: parseInt(fd.get('n4err')) || 15, label: "Node-04 (CRITICAL)" },
+                    { x: 55, y: 150, r: 6, label: "Node-05" },
+                    { x: 20, y: 80, r: 4, label: "Node-06" }
+                ]
+            }, 'ops-matrix-success');
+        });
+
+        // Support
+        document.getElementById('support-ticket-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/support/add-ticket', {
+                customer: fd.get('customer'), issue: fd.get('issue'), priority: fd.get('priority'), waitTime: 'Just now'
+            }, 'support-ticket-success', e.target);
+        });
+
+        document.getElementById('support-sentiment-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/support/update', {
+                sentimentAnalysis: {
+                    labels: ["Delighted", "Satisfied", "Neutral", "Frustrated"],
+                    data: [
+                        parseInt(fd.get('del')) || 65,
+                        parseInt(fd.get('sat')) || 22,
+                        parseInt(fd.get('neu')) || 10,
+                        parseInt(fd.get('fru')) || 3
+                    ]
+                }
+            }, 'support-sentiment-success');
+        });
+
+        // Payroll
+        document.getElementById('payroll-status-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            postData('/payroll/update-status', {
+                employeeId: fd.get('employeeId'), status: fd.get('status')
+            }, 'payroll-success', e.target);
+        });
+
+        // Finance
+        document.getElementById('finance-health-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const cash = parseFloat(fd.get('cash')) || 2.1;
+            const burn = parseInt(fd.get('burn')) || 420;
+            const runway = Math.floor(cash * 1000 / burn);
+            
+            postData('/finance/update', {
+                kpis: {
+                    runway: { value: runway, unit: 'MONTHS', label: 'CASH RUNWAY STABILITY', percentage: Math.min(runway * 5, 100) }
+                },
+                burnRate: {
+                    labels: ["Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+                    burn: [450, 480, 520, 490, 510, burn],
+                    cash: [4.2, 3.8, 3.2, 2.8, 2.4, cash]
+                }
+            }, 'finance-health-success');
+        });
+    </script>
+</body>
+</html>

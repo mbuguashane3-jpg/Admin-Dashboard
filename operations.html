@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operations Dashboard</title>
+    <!-- Modern font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .charts-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; margin-bottom: 40px; }
+        .chart-container { position: relative; height: 320px; width: 100%; }
+        .page-container { background: transparent !important; padding: 48px; }
+        
+        .system-ticker-container {
+            background: rgba(37, 99, 235, 0.1); backdrop-filter: blur(8px);
+            color: var(--text-main); padding: 12px 24px; margin: -48px -48px 48px -48px;
+            display: flex; align-items: center; overflow: hidden; white-space: nowrap;
+            font-size: 0.85rem; border-bottom: 1px solid var(--card-border); font-family: 'Courier New', Courier, monospace;
+        }
+        .ticker-label { background: #1e293b; padding: 4px 10px; border-radius: 6px; font-weight: 800; color: #10b981; margin-right: 20px; font-size: 0.7rem; }
+        .ticker-content { display: inline-block; animation: ticker 40s linear infinite; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        .node-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; margin-top: 15px; }
+        .node-dot { width: 12px; height: 12px; background: #10b981; border-radius: 3px; box-shadow: 0 0 5px #10b981; animation: node-pulse 2s infinite alternate; }
+        @keyframes node-pulse { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        .scan-btn {
+            width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; 
+            border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; margin-top: 20px;
+        }
+        .scan-btn:hover { background: #047857; transform: translateY(-2px); }
+        .opt-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0,0,0,0.03); border-radius: 10px; margin-top: 10px; }
+        .toggle { width: 34px; height: 18px; background: #cbd5e1; border-radius: 9px; position: relative; cursor: pointer; }
+        .toggle::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s; }
+        .toggle.active { background: #10b981; }
+        .toggle.active::after { transform: translateX(16px); }
+    </style>
+</head>
+<body class="page-container">
+    <div id="direct-access-header" style="display:none; background: var(--primary-color); color: white; padding: 10px; text-align: center; border-radius: 10px; margin-bottom: 20px;">
+        You are viewing a sub-page. <a href="index.html" style="color: white; font-weight: 800; text-decoration: underline;">Click here to open the Main Dashboard</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
+    <script>
+        if (window.self === window.top) document.getElementById('direct-access-header').style.display = 'block';
+        const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
+
+    <div class="system-ticker-container">
+        <div class="ticker-label">SYSTEM_LOGS</div>
+        <div class="ticker-content" id="ticker-content"></div>
+    </div>
+
+    <header class="header-section animate-fade-in stagger-1">
+        <h1>Operational Intelligence</h1>
+        <p>Real-time monitoring of infrastructure, nodes, and system matrix performance.</p>
+    </header>
+
+    <section class="stats-grid">
+        <div class="card animate-fade-in stagger-2">
+            <div class="card-title">ACTIVE AUTOMATIONS <i class="fas fa-robot"></i></div>
+            <div id="automations-value" class="card-value" data-target="0">0</div>
+            <div id="automations-status" class="card-trend trend-up"><i class="fas fa-check-circle"></i> 100% Operational</div>
+        </div>
+        <div class="card animate-fade-in stagger-3">
+            <div class="card-title">SYSTEM SUCCESS RATE <i class="fas fa-shield-alt"></i></div>
+            <div id="success-rate" class="card-value" data-target="0" data-suffix="%">0%</div>
+            <div id="success-status" class="card-trend trend-up">Optimal Performance</div>
+        </div>
+        <div class="card animate-fade-in stagger-4">
+            <div class="card-title">AVERAGE SYSTEM LATENCY <i class="fas fa-tachometer-alt"></i></div>
+            <div id="latency-value" class="card-value" data-target="0" data-suffix="ms">0ms</div>
+            <div id="latency-trend" class="card-trend trend-down"><i class="fas fa-arrow-down"></i> 0ms improvement</div>
+        </div>
+        <div class="card animate-fade-in stagger-5">
+            <div class="card-title">INFRASTRUCTURE NODE HEALTH <i class="fas fa-server"></i></div>
+            <div class="node-grid" id="node-grid"></div>
+        </div>
+    </section>
+
+    <div class="charts-row">
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">GLOBAL INFRASTRUCTURE LOAD <i class="fas fa-network-wired"></i></div>
+            <div class="chart-container"><canvas id="loadChart"></canvas></div>
+        </div>
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">SERVER MATRIX (LOAD VS LATENCY) <i class="fas fa-project-diagram"></i></div>
+            <div class="chart-container"><canvas id="serverMatrixChart"></canvas></div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <section class="card">
+            <div class="card-title">CRITICAL WORKFLOW STATUS <span class="badge badge-primary">Running</span></div>
+            <table>
+                <thead>
+                    <tr><th>Workflow Name</th><th>Product Line</th><th>Execution Time</th><th>Health</th></tr>
+                </thead>
+                <tbody id="operations-table-body"></tbody>
+            </table>
+        </section>
+
+        <aside class="card">
+            <div class="card-title">CONTROL CENTER <i class="fas fa-tools"></i></div>
+            <div class="opt-item">
+                <div style="font-size:0.85rem; font-weight:700;">Automated Failover</div>
+                <div class="toggle" onclick="this.classList.toggle('active')"></div>
+            </div>
+            <div class="opt-item">
+                <div style="font-size:0.85rem; font-weight:700;">Cache Optimization</div>
+                <div class="toggle" onclick="this.classList.toggle('active')"></div>
+            </div>
+            <button class="scan-btn" id="scan-btn" onclick="startScan()"><i class="fas fa-search"></i> RUN DIAGNOSTIC</button>
+            <div id="scan-status" style="text-align:center; font-size:0.75rem; margin-top:10px; font-weight:700; color:var(--primary-color); display:none;">
+                SCANNING INFRASTRUCTURE...
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        function applyTheme(theme) { document.documentElement.setAttribute('data-theme', theme); }
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'THEME_UPDATE') applyTheme(event.data.theme);
+            if (event.data.type === 'DATABASE_UPDATE') fetchData();
+        });
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) applyTheme(savedTheme);
+
+        const API_URL = '/api/operations';
+
+        async function fetchData() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+                const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) { console.error('Error:', error); }
+        }
+
+        function updateDashboard(data) {
+            if (!data) return;
+            try {
+                if (data.logs) {
+                    const ticker = document.getElementById('ticker-content');
+                    if (ticker) {
+                        ticker.innerHTML = data.logs.map(l => `
+                            <span style="margin-right:50px;">[${l.level}] ${l.message}</span>
+                        `).join('');
+                    }
+                }
+                if (data.kpis) {
+                    const autVal = document.getElementById('automations-value');
+                    const autStat = document.getElementById('automations-status');
+                    if (autVal) autVal.setAttribute('data-target', data.kpis.automations.value);
+                    if (autStat) autStat.innerHTML = `<i class="fas fa-check-circle"></i> ${data.kpis.automations.status}`;
+                    
+                    const sucVal = document.getElementById('success-rate');
+                    const sucStat = document.getElementById('success-status');
+                    if (sucVal) {
+                        sucVal.setAttribute('data-target', data.kpis.successRate.value);
+                        sucVal.setAttribute('data-suffix', data.kpis.successRate.suffix || '%');
+                    }
+                    if (sucStat) sucStat.innerText = data.kpis.successRate.status;
+                    
+                    const latVal = document.getElementById('latency-value');
+                    const latTrend = document.getElementById('latency-trend');
+                    if (latVal) {
+                        latVal.setAttribute('data-target', data.kpis.latency.value);
+                        latVal.setAttribute('data-suffix', data.kpis.latency.suffix || 'ms');
+                    }
+                    if (latTrend) latTrend.innerHTML = `<i class="fas fa-arrow-down"></i> ${Math.abs(data.kpis.latency.trend)}ms improvement`;
+                }
+                if (data.nodes) {
+                    const nodeGrid = document.getElementById('node-grid');
+                    if (nodeGrid) {
+                        nodeGrid.innerHTML = data.nodes.map(n => `
+                            <div class="node-dot" ${n.status === 'warning' ? 'style="background:#f59e0b; box-shadow:0 0 5px #f59e0b;"' : ''}></div>
+                        `).join('');
+                    }
+                }
+                if (data.workflows) {
+                    const tableBody = document.getElementById('operations-table-body');
+                    if (tableBody) {
+                        tableBody.innerHTML = data.workflows.map(wf => `
+                            <tr><td><strong>${wf.name}</strong></td><td>${wf.product}</td><td>${wf.time}</td>
+                            <td><span class="badge badge-${wf.status === 'Optimal' ? 'success' : 'warning'}">${wf.status}</span></td></tr>
+                        `).join('');
+                    }
+                }
+                animateNumbers();
+                initCharts(data.loadChart, data.serverMatrix);
+            } catch (err) { console.error('Error in updateDashboard:', err); }
+        }
+
+        function animateNumbers() {
+            const counters = document.querySelectorAll('.card-value');
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target') || 0;
+                const suffix = counter.getAttribute('data-suffix') || '';
+                if (target === 0) return;
+                let count = 0;
+                const update = () => {
+                    count += target / 50;
+                    if (count < target) {
+                        counter.innerText = (target > 10 ? Math.floor(count) : count.toFixed(1)) + suffix;
+                        requestAnimationFrame(update);
+                    } else { counter.innerText = target + suffix; }
+                };
+                update();
+            });
+        }
+
+        function initCharts(loadData, matrixData) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const color = isDark ? '#9ca3af' : '#4b5563';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+            const loadCanvas = document.getElementById('loadChart');
+            if (loadCanvas) {
+                const loadCtx = loadCanvas.getContext('2d');
+                if (window.loadChartInst) window.loadChartInst.destroy();
+                window.loadChartInst = new Chart(loadCtx, {
+
+                    type: 'line',
+                    data: {
+                        labels: loadData ? loadData.labels : ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
+                        datasets: [{ label: 'Load %', data: loadData ? loadData.data : [35, 20, 65, 85, 75, 90, 45], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: color }, grid: { color: gridColor } }, x: { ticks: { color: color }, grid: { display: false } } } }
+                });
+            }
+
+            const matrixCanvas = document.getElementById('serverMatrixChart');
+            if (matrixCanvas) {
+                const matrixCtx = matrixCanvas.getContext('2d');
+                if (window.matrixChartInst) window.matrixChartInst.destroy();
+                window.matrixChartInst = new Chart(matrixCtx, {
+                    type: 'bubble',
+                    data: {
+                        datasets: [{
+                            label: 'Server Nodes',
+                            data: matrixData || [ {x: 45, y: 120, r: 5}, {x: 75, y: 310, r: 12}, {x: 30, y: 95, r: 4} ],
+                            backgroundColor: (ctx) => {
+                                const val = ctx.raw ? ctx.raw.x : 0;
+                                return val > 70 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)';
+                            }
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { callbacks: { label: (ctx) => `${ctx.raw.label || 'Node'}: CPU ${ctx.raw.x}%, Latency ${ctx.raw.y}ms` } }
+                        },
+                        scales: {
+                            y: { title: { display: true, text: 'Latency (ms)', color: color }, ticks: { color: color }, grid: { color: gridColor } },
+                            x: { title: { display: true, text: 'CPU Load (%)', color: color }, ticks: { color: color }, grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function startScan() {
+            const btn = document.getElementById('scan-btn');
+            const status = document.getElementById('scan-status');
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SCANNING...';
+            status.style.display = 'block';
+            status.innerText = 'INITIALIZING DEEP PACKET INSPECTION...';
+
+            const phases = [
+                'CHECKING NODE TOPOLOGY...',
+                'ANALYZING LATENCY SPIKES...',
+                'OPTIMIZING DATA BUFFERS...',
+                'VERIFYING SECURITY HANDSHAKES...'
+            ];
+
+            let phase = 0;
+            const interval = setInterval(() => {
+                if (phase < phases.length) {
+                    status.innerText = phases[phase];
+                    phase++;
+                } else {
+                    clearInterval(interval);
+                    completeScan();
+                }
+            }, 1000);
+
+            function completeScan() {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> SYSTEM HEALTHY';
+                status.innerText = 'DIAGNOSTIC COMPLETE: 0 ERRORS FOUND';
+                
+                // Visual feedback: briefly make all nodes green
+                const nodes = document.querySelectorAll('.node-dot');
+                nodes.forEach(n => {
+                    n.style.background = '#10b981';
+                    n.style.boxShadow = '0 0 10px #10b981';
+                });
+
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-search"></i> RUN DIAGNOSTIC';
+                    status.style.display = 'none';
+                    fetchData(); // Refresh to original state
+                }, 4000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+</body>
+</html>

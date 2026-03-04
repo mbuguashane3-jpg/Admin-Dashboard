@@ -1,0 +1,35 @@
+{
+  "tickets": [
+    { "text": "New Ticket: Authentication Failure (Nexus ERP) - High Priority", "type": "new" },
+    { "text": "Resolved: Billing Inquiry (CloudSync) - Resolution Time: 12m", "type": "resolved" },
+    { "text": "New Ticket: API Integration Query (DataGuard Pro) - Normal Priority", "type": "new" }
+  ],
+  "kpis": {
+    "sentiment": { "value": 4.8, "label": "CUSTOMER SENTIMENT" },
+    "resolutionGoal": { "value": 85, "suffix": "%", "label": "TODAY'S RESOLUTION GOAL" },
+    "responseTime": { "value": 14, "suffix": "m", "label": "RESPONSE LOAD (24H)" },
+    "resolutionRate": { "value": 94.2, "suffix": "%", "label": "RESOLUTION RATE", "trend": 1.5 }
+  },
+  "sentimentAnalysis": {
+    "labels": ["Delighted", "Satisfied", "Neutral", "Frustrated"],
+    "data": [65, 22, 10, 3]
+  },
+  "heatmap": [
+    "low", "low", "med", "high", "high", "med", "low", "low",
+    "low", "med", "high", "high", "med", "low", "low", "low",
+    "low", "med", "high", "high", "med", "low", "low", "low"
+  ],
+  "satisfactionChart": {
+    "labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "data": [4.2, 4.4, 4.1, 4.6, 4.8, 4.7, 4.8]
+  },
+  "criticalTickets": [
+    { "customer": "Global Logistics", "issue": "Database Synchronization Error", "priority": "Critical", "waitTime": "12m" },
+    { "customer": "TechSolutions Ltd", "issue": "User Access Restriction", "priority": "High", "waitTime": "24m" },
+    { "customer": "Innovate Soft", "issue": "API Connection Timeout", "priority": "High", "waitTime": "35m" }
+  ],
+  "retentionSignals": [
+    { "text": "High Engagement in Security Training", "status": "POSITIVE", "type": "heart" },
+    { "text": "Inactive for > 14 days", "status": "RISK", "type": "user-slash", "color": "warning" }
+  ]
+}

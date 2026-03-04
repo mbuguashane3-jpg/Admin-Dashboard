@@ -1,0 +1,354 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Dashboard</title>
+    <!-- Modern font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .charts-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-bottom: 40px; }
+        .chart-container { position: relative; height: 320px; width: 100%; }
+        .page-container { background: transparent !important; padding: 48px; }
+        
+        /* Animation 11: North Star Metric Glow */
+        .north-star-card {
+            background: linear-gradient(135deg, #065f46 0%, #111827 100%) !important;
+            color: white !important;
+            border: 1px solid rgba(16, 185, 129, 0.4) !important;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.2) !important;
+            position: relative; overflow: hidden;
+        }
+        .north-star-card::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+            animation: rotate-glow 10s linear infinite;
+        }
+        @keyframes rotate-glow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .north-star-card .card-title, .north-star-card .card-value { color: white !important; position: relative; z-index: 2; }
+
+        /* Animation 12: Growth Velocity Particle */
+        .velocity-container { margin-top: 15px; height: 4px; background: rgba(0,0,0,0.05); border-radius: 2px; position: relative; overflow: hidden; }
+        .velocity-particle {
+            position: absolute; height: 100%; width: 40px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            animation: slide-particle 2s linear infinite;
+        }
+        @keyframes slide-particle { from { left: -40px; } to { left: 100%; } }
+
+        /* Decision Simulator Slider */
+        .simulator-slider { width: 100%; margin: 15px 0; cursor: pointer; }
+        .simulator-result { font-weight: 800; color: var(--primary-color); font-size: 1.1rem; }
+    </style>
+</head>
+<body class="page-container">
+    <div id="direct-access-header" style="display:none; background: var(--primary-color); color: white; padding: 10px; text-align: center; border-radius: 10px; margin-bottom: 20px;">
+        You are viewing a sub-page. <a href="index.html" style="color: white; font-weight: 800; text-decoration: underline;">Click here to open the Main Dashboard</a>
+    </div>
+    <script>
+        if (window.self === window.top) {
+            document.getElementById('direct-access-header').style.display = 'block';
+        }
+    </script>
+    <div class="skeleton-overlay"><div class="skeleton-pulse"></div></div>
+
+    <header class="header-section animate-fade-in stagger-1">
+        <h1>Executive Suite</h1>
+        <p>Strategic overview of global business health and performance metrics.</p>
+    </header>
+
+    <!-- KPI Section: Including North Star Metric -->
+    <section class="stats-grid">
+        <div class="card north-star-card animate-fade-in stagger-2">
+            <div class="card-title">ECOSYSTEM MARKET VALUE <i class="fas fa-star"></i></div>
+            <div class="card-value">$842.5M</div>
+            <p style="font-size:0.75rem; opacity:0.7; position:relative; z-index:2;">Strategic Long-term Valuation</p>
+        </div>
+        <div class="card animate-fade-in stagger-3">
+            <div class="card-title">ANNUAL RECURRING REVENUE <i class="fas fa-dollar-sign"></i></div>
+            <div id="arr-display" class="card-value" data-target="14.2" data-prefix="$" data-suffix="M">$14.2M</div>
+            <div class="card-trend trend-up"><i class="fas fa-arrow-up"></i> 12.5% increase</div>
+        </div>
+        <div class="card animate-fade-in stagger-4">
+            <div class="card-title">MONTH-OVER-MONTH GROWTH <i class="fas fa-chart-line"></i></div>
+            <div class="card-value" data-target="18.4" data-suffix="%">18.4%</div>
+            <div class="velocity-container"><div class="velocity-particle"></div></div>
+        </div>
+        <div class="card animate-fade-in stagger-5">
+            <div class="card-title">DAILY ACTIVE USERS <i class="fas fa-users"></i></div>
+            <div class="card-value" data-target="42.5" data-suffix="k">42.5k</div>
+            <div class="card-trend trend-up"><i class="fas fa-arrow-up"></i> 5% increase</div>
+        </div>
+    </section>
+
+    <!-- Decision Simulator Section -->
+    <div class="charts-row">
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">REVENUE PERFORMANCE <i class="fas fa-chart-area"></i></div>
+            <div class="chart-container"><canvas id="revenueChart"></canvas></div>
+        </div>
+        <!-- Business Health Radar -->
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">BUSINESS HEALTH RADAR <i class="fas fa-bullseye"></i></div>
+            <div class="chart-container"><canvas id="radarChart"></canvas></div>
+        </div>
+        <!-- ARR Scalability Simulator -->
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">SCALABILITY SIMULATOR <i class="fas fa-magic"></i></div>
+            <p style="font-size:0.75rem; color:var(--text-muted);">Simulate the 12-month ARR impact of increasing customer retention.</p>
+            
+            <div style="margin-top:20px;">
+                <label style="font-size:0.75rem; font-weight:700;">RETENTION INCREASE: <span id="retention-label">+0%</span></label>
+                <input type="range" id="retention-slider" min="0" max="20" step="1" value="0" class="simulator-slider">
+            </div>
+
+            <div style="margin-top:30px; padding:20px; background:rgba(16,185,129,0.05); border-radius:15px; border-left:4px solid var(--primary-color);">
+                <div style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">PROJECTED 12-MONTH REVENUE GROWTH:</div>
+                <div id="sim-result" class="simulator-result">+$0.0M</div>
+                <p style="font-size:0.7rem; color:var(--text-muted); margin-top:10px;">Compounded monthly growth at current velocity.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <section class="card animate-fade-in stagger-6">
+            <div class="card-title">ACTIVE SOFTWARE PRODUCTS <span class="badge badge-primary">7 Active</span></div>
+            <table>
+                <thead>
+                    <tr><th>Product Name</th><th>Business Category</th><th>Health Status</th><th>Market Traction</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Nexus ERP</strong></td><td>Enterprise Resource Planning</td><td><span class="badge badge-success">Healthy</span></td><td>High Performance</td></tr>
+                    <tr><td><strong>CloudSync Core</strong></td><td>Infrastructure Services</td><td><span class="badge badge-success">Healthy</span></td><td>Stable Growth</td></tr>
+                    <tr><td><strong>DataGuard Pro</strong></td><td>Cybersecurity Systems</td><td><span class="badge badge-warning">Monitoring</span></td><td>Growing Reach</td></tr>
+                    <tr><td><strong>Streamline Flow</strong></td><td>Workflow Automation</td><td><span class="badge badge-success">Healthy</span></td><td>Rising Demand</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <aside class="card animate-fade-in stagger-6">
+            <div class="card-title">STRATEGIC BUSINESS SIGNALS <i class="fas fa-bolt"></i></div>
+            <div class="signal-item">
+                <div class="signal-icon"><i class="fas fa-rocket"></i></div>
+                <div class="signal-info">
+                    <h4>High Retention in Small Business Segment</h4>
+                    <p>Small and Medium Business retention hit 94%. Opportunity to expand localized marketing efforts.</p>
+                </div>
+            </div>
+            <div class="signal-item">
+                <div class="signal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="signal-info">
+                    <h4>Latency Surge: Nexus Infrastructure</h4>
+                    <p>Cloud infrastructure costs rising for Nexus ERP. System optimization is required.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Theme Sync Logic
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'THEME_UPDATE') {
+                applyTheme(event.data.theme);
+            }
+            if (event.data.type === 'DATABASE_UPDATE') {
+                console.log('Realtime update: Refreshing Executive data...');
+                fetchData();
+            }
+        });
+
+        // Fail-safe: Check localStorage directly
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) applyTheme(savedTheme);
+
+        const API_URL = '/api/executive';
+
+        async function fetchData() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+
+                const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Error fetching data, using static defaults:', error);
+                // Even on error, we should init charts with default data
+                initCharts();
+            }
+        }
+
+        function updateDashboard(data) {
+            try {
+                // Update KPIs
+                if (data.kpis) {
+                    if (data.kpis.marketValue) document.querySelector('.north-star-card .card-value').innerText = `$${data.kpis.marketValue.value}${data.kpis.marketValue.unit}`;
+                    
+                    const arrElement = document.getElementById('arr-display');
+                    if (data.kpis.arr) {
+                        arrElement.innerText = `$${data.kpis.arr.value}${data.kpis.arr.unit}`;
+                        arrElement.setAttribute('data-target', data.kpis.arr.value);
+                    }
+                    
+                    const momElement = document.querySelector('[data-suffix="%"]');
+                    if (data.kpis.momGrowth) {
+                        momElement.innerText = `${data.kpis.momGrowth.value}${data.kpis.momGrowth.unit}`;
+                        momElement.setAttribute('data-target', data.kpis.momGrowth.value);
+                    }
+                    
+                    const dauElement = document.querySelector('[data-suffix="k"]');
+                    if (data.kpis.dau) {
+                        dauElement.innerText = `${data.kpis.dau.value}${data.kpis.dau.unit}`;
+                        dauElement.setAttribute('data-target', data.kpis.dau.value);
+                    }
+                }
+
+                // Update Table
+                if (data.products) {
+                    const productCount = data.products.length;
+                    const badge = document.querySelector('.card-title .badge-primary');
+                    if (badge) badge.innerText = `${productCount} Active`;
+
+                    const tbody = document.querySelector('table tbody');
+                    tbody.innerHTML = data.products.map(p => `
+                        <tr>
+                            <td><strong>${p.name}</strong></td>
+                            <td>${p.category}</td>
+                            <td><span class="badge badge-${p.status === 'Healthy' ? 'success' : 'warning'}">${p.status}</span></td>
+                            <td>${p.traction}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Update Signals
+                if (data.signals) {
+                    const signalContainer = document.querySelector('aside.card');
+                    const signalsHtml = data.signals.map(s => `
+                        <div class="signal-item">
+                            <div class="signal-icon"><i class="fas fa-${s.type === 'rocket' ? 'rocket' : 'exclamation-triangle'}"></i></div>
+                            <div class="signal-info">
+                                <h4>${s.title}</h4>
+                                <p>${s.description}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    signalContainer.innerHTML = `<div class="card-title">STRATEGIC BUSINESS SIGNALS <i class="fas fa-bolt"></i></div>` + signalsHtml;
+                }
+
+                // Initialize Charts with API data
+                initCharts(data.revenueChart, data.radarChart);
+            } catch (err) {
+                console.error('Error updating dashboard UI:', err);
+                initCharts();
+            }
+        }
+
+        // Decision Simulator Logic
+        const slider = document.getElementById('retention-slider');
+        const label = document.getElementById('retention-label');
+        const result = document.getElementById('sim-result');
+        const arrDisplay = document.getElementById('arr-display');
+
+        slider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            label.innerText = '+' + val + '%';
+            
+            const baseARR = parseFloat(arrDisplay.getAttribute('data-target')) || 14.2;
+            const growth = (baseARR * (val / 100) * 1.8).toFixed(1);
+            result.innerText = '+$' + growth + 'M';
+            
+            const futureARR = (baseARR + parseFloat(growth)).toFixed(1);
+            arrDisplay.innerText = '$' + futureARR + 'M';
+            arrDisplay.style.color = val > 0 ? 'var(--primary-color)' : '';
+        });
+
+        function initCharts(revenueData, radarData) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const color = isDark ? '#9ca3af' : '#4b5563';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            
+            // --- Revenue Line Chart ---
+            const revCtx = document.getElementById('revenueChart').getContext('2d');
+            if (window.myRevChart) window.myRevChart.destroy();
+            window.myRevChart = new Chart(revCtx, {
+                type: 'line',
+                data: {
+                    labels: revenueData ? revenueData.labels : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: revenueData ? revenueData.data : [8.2, 9.4, 10.1, 11.5, 12.8, 13.5, 14.2],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { color: color }, grid: { color: gridColor } },
+                        x: { ticks: { color: color }, grid: { color: gridColor } }
+                    }
+                }
+            });
+
+            // --- Business Health Radar Chart ---
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+            if (window.myRadarChart) window.myRadarChart.destroy();
+            window.myRadarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: radarData ? radarData.labels : ["Growth", "Retention", "Profitability", "System Health", "Market Presence"],
+                    datasets: [
+                        {
+                            label: 'Current Performance',
+                            data: radarData ? radarData.data : [85, 92, 78, 95, 88],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            pointBackgroundColor: '#10b981'
+                        },
+                        {
+                            label: 'Target Metrics',
+                            data: radarData ? radarData.targets : [90, 95, 85, 90, 95],
+                            borderColor: 'rgba(255, 255, 255, 0.3)',
+                            backgroundColor: 'transparent',
+                            borderDash: [5, 5],
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        r: {
+                            angleLines: { color: gridColor },
+                            grid: { color: gridColor },
+                            pointLabels: { color: color, font: { family: 'Inter', size: 10, weight: 'bold' } },
+                            ticks: { display: false, stepSize: 20 },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+</body>
+</html>

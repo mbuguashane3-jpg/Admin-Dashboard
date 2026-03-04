@@ -1,0 +1,13 @@
+{
+  "employees": [
+    { "id": "EMP-001", "name": "Employee ABC", "department": "Engineering", "amount": 8500, "status": "PENDING", "hash": "---" },
+    { "id": "EMP-002", "name": "Jane Smith", "department": "Marketing", "amount": 7200, "status": "SETTLED", "hash": "0x7f2a...9b1c" },
+    { "id": "EMP-003", "name": "Michael Chen", "department": "Sales", "amount": 6800, "status": "SETTLED", "hash": "0x3e1d...4a2f" },
+    { "id": "EMP-004", "name": "Sarah Johnson", "department": "Operations", "amount": 7500, "status": "DISBURSED", "hash": "0x9b8c...1e2d" }
+  ],
+  "stats": {
+    "totalDisbursed": 21500,
+    "pendingSettlement": 1,
+    "health": 98
+  }
+}

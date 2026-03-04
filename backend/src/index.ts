@@ -1,0 +1,62 @@
+import express from 'express';
+import type { Request, Response } from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import executiveRouter from './routes/executive.ts';
+import salesRouter from './routes/sales.ts';
+import marketingRouter from './routes/marketing.ts';
+import financeRouter from './routes/finance.ts';
+import operationsRouter from './routes/operations.ts';
+import supportRouter from './routes/support.ts';
+import payrollRouter from './routes/payroll.ts';
+
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { verifyUser, adminOnly } from './middleware/auth.ts';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// Serve static files from the project root
+// Both src/index.ts and dist/index.js are two levels deep from root
+const rootPath = path.join(__dirname, '../../');
+
+app.use(express.static(rootPath));
+
+// Auth Sub-Router
+const apiRouter = express.Router();
+
+// 1. Verify User for ALL API calls
+apiRouter.use(verifyUser);
+
+// 2. Protect ALL POST routes (Updates) with adminOnly
+apiRouter.post('*', adminOnly);
+
+// 3. Mount individual routes on the protected apiRouter
+apiRouter.use('/executive', executiveRouter);
+apiRouter.use('/sales', salesRouter);
+apiRouter.use('/marketing', marketingRouter);
+apiRouter.use('/finance', financeRouter);
+apiRouter.use('/operations', operationsRouter);
+apiRouter.use('/support', supportRouter);
+apiRouter.use('/payroll', payrollRouter);
+
+// 4. Mount the entire protected API
+app.use('/api', apiRouter);
+
+app.get('/api/health', (req: Request, res: Response) => {
+  res.json({ status: 'API is running' });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on http://0.0.0.0:${PORT}`);
+  console.log(`Local Access: http://localhost:${PORT}`);
+});

@@ -1,0 +1,39 @@
+{
+  "acquisitions": [
+    { "text": "New Signup: David M. from Berlin", "time": "Just now", "icon": "user-circle" },
+    { "text": "Whitepaper Download: Sarah P. from New York", "time": "5m ago", "icon": "download" },
+    { "text": "New Demo Request: Enterprise Corp", "time": "12m ago", "icon": "user-circle" }
+  ],
+  "kpis": {
+    "monthlyVisitors": { "value": 128450, "label": "MONTHLY VISITORS", "trend": 14.2 },
+    "ctr": { "value": 4.2, "suffix": "%", "label": "CLICK-THROUGH RATE", "trend": 0.8 },
+    "newSignups": { "value": 3240, "label": "NEW USER SIGNUPS", "trend": 22 }
+  },
+  "funnel": [
+    { "label": "AWARENESS", "count": "128k Views", "percentage": 100 },
+    { "label": "INTEREST", "count": "24k Clicks", "percentage": 80 },
+    { "label": "DESIRE", "count": "8.5k Demos", "percentage": 60 },
+    { "label": "ACTION", "count": "3.2k Signups", "percentage": 40 }
+  ],
+  "conversionFunnel": {
+    "labels": ["Impressions", "Clicks", "Demos", "Signups"],
+    "data": [128000, 24000, 8500, 3240]
+  },
+  "abTests": [
+    { "label": "TEST A", "headline": "The All-in-One ERP for Scale", "cr": "2.1%", "winner": false },
+    { "label": "TEST B", "headline": "Automate Your Workflow Today", "cr": "4.8%", "winner": true }
+  ],
+  "contentPerformance": [
+    { "title": "2026 ERP Trends Report", "channel": "LinkedIn Organic", "engagement": "8.4%", "conversion": "4.2%", "hot": true },
+    { "title": "Scaling Cloud Infrastructure", "channel": "Technical Blog", "engagement": "6.2%", "conversion": "2.8%", "hot": false },
+    { "title": "Data Security Webinar", "channel": "Email Marketing", "engagement": "4.1%", "conversion": "5.5%", "hot": true }
+  ],
+  "trafficChart": {
+    "labels": ["Search", "Social", "Direct", "Email", "Referral"],
+    "data": [42000, 31000, 25000, 18000, 12450]
+  },
+  "effectivenessChart": {
+    "labels": ["Reach", "Cost", "Conversion", "Retention", "Speed"],
+    "data": [90, 40, 70, 85, 30]
+  }
+}

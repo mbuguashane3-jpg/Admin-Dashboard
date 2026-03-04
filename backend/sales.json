@@ -1,0 +1,41 @@
+{
+  "ticker": [
+    { "text": "New Enterprise Sale: Nexus ERP", "amount": 4500, "type": "new" },
+    { "text": "Annual Renewal: DataGuard Pro", "amount": 299, "type": "renewal" },
+    { "text": "Product Upgrade: CloudSync", "amount": 1200, "type": "upgrade" },
+    { "text": "New Software Sale: Streamline Flow", "amount": 450, "type": "new" }
+  ],
+  "kpis": {
+    "dailySales": { "value": 12450, "prefix": "$", "label": "CURRENT DAILY SALES", "trend": 8.2 },
+    "conversionRate": { "value": 3.8, "suffix": "%", "label": "CUSTOMER CONVERSION RATE", "trend": 0.5 },
+    "orderValue": { "value": 1250, "prefix": "$", "label": "AVERAGE ORDER VALUE", "trend": -2.0 }
+  },
+  "salesTrend": {
+    "labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "data": [10200, 11500, 9800, 12100, 14500, 8900, 7500]
+  },
+  "regions": [
+    { "name": "North American Market", "amount": 85000, "percentage": 85, "rank": 1 },
+    { "name": "European Economic Area", "amount": 62000, "percentage": 62, "rank": 2 },
+    { "name": "Asia Pacific Region", "amount": 45000, "percentage": 45, "rank": 3 },
+    { "name": "South American Market", "amount": 28000, "percentage": 28, "rank": 4 }
+  ],
+  "geospatial": [
+    { "city": "New York", "lat": 40.7128, "lng": -74.0060, "revenue": 42500 },
+    { "city": "London", "lat": 51.5074, "lng": -0.1278, "revenue": 31000 },
+    { "city": "Tokyo", "lat": 35.6762, "lng": 139.6503, "revenue": 28500 },
+    { "city": "Sydney", "lat": -33.8688, "lng": 151.2093, "revenue": 12000 },
+    { "city": "Berlin", "lat": 52.5200, "lng": 13.4050, "revenue": 21500 },
+    { "city": "San Francisco", "lat": 37.7749, "lng": -122.4194, "revenue": 38000 }
+  ],
+  "transactions": [
+    { "customer": "TechGlobal Incorporated", "product": "Nexus ERP Suite", "amount": 4500, "type": "Subscription" },
+    { "customer": "Sarah Jenkins", "product": "DataGuard Professional", "amount": 199, "type": "One-time Purchase" },
+    { "customer": "Innovate Software Solutions", "product": "CloudSync Core System", "amount": 1200, "type": "Subscription" },
+    { "customer": "Mark Peterson", "product": "Streamline Flow Automation", "amount": 450, "type": "Product Upgrade" }
+  ],
+  "revenueDrivers": {
+    "labels": ["Subscription Renewals", "New Customer Acquisitions", "Product Upgrades"],
+    "data": [62, 24, 14]
+  }
+}

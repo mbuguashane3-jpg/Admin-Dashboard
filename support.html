@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Dashboard</title>
+    <!-- Modern font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .charts-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; margin-bottom: 40px; }
+        .chart-container { position: relative; height: 320px; width: 100%; }
+        .page-container { background: transparent !important; padding: 48px; }
+        
+        .support-pulse {
+            background: rgba(37, 99, 235, 0.1); backdrop-filter: blur(8px);
+            color: var(--text-main); padding: 12px 24px; margin: -48px -48px 48px -48px;
+            display: flex; align-items: center; overflow: hidden; white-space: nowrap;
+            font-size: 0.85rem; border-bottom: 1px solid var(--card-border);
+        }
+        .pulse-label { background: var(--primary-color); padding: 4px 10px; border-radius: 6px; font-weight: 800; color: white; margin-right: 20px; font-size: 0.75rem; }
+        .pulse-content { display: inline-block; animation: ticker 30s linear infinite; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* Sentiment Gauge */
+        .gauge-container { position: relative; width: 140px; height: 70px; margin: 0 auto; overflow: hidden; }
+        .gauge-bg { width: 140px; height: 140px; border-radius: 50%; border: 15px solid rgba(0,0,0,0.05); border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); }
+        .gauge-fill { position: absolute; top: 0; left: 0; width: 140px; height: 140px; border-radius: 50%; border: 15px solid var(--primary-color); border-bottom-color: transparent; border-left-color: transparent; transform: rotate(115deg); transition: transform 1s ease-out; }
+        .gauge-value { position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 1.2rem; font-weight: 800; color: var(--primary-color); }
+
+        .heatmap-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; margin-top: 15px; }
+        .heat-cell { width: 100%; aspect-ratio: 1; border-radius: 2px; background: rgba(16, 185, 129, 0.1); }
+        .heat-high { background: #065f46; }
+        .heat-med { background: #10b981; }
+        .heat-low { background: #a7f3d0; }
+
+        .retention-item {
+            display: flex; align-items: center; padding: 12px; background: rgba(16, 185, 129, 0.05);
+            border-radius: 10px; margin-bottom: 10px; border-left: 4px solid var(--primary-color);
+        }
+        .retention-icon { margin-right: 12px; font-size: 1.1rem; color: var(--primary-color); }
+        .retention-text { flex-grow: 1; font-size: 0.8rem; font-weight: 600; }
+        .retention-status { font-weight: 800; font-size: 0.65rem; }
+    </style>
+</head>
+<body class="page-container">
+    <div id="direct-access-header" style="display:none; background: var(--primary-color); color: white; padding: 10px; text-align: center; border-radius: 10px; margin-bottom: 20px;">
+        You are viewing a sub-page. <a href="index.html" style="color: white; font-weight: 800; text-decoration: underline;">Click here to open the Main Dashboard</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
+    <script>
+        if (window.self === window.top) document.getElementById('direct-access-header').style.display = 'block';
+        const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
+
+    <div class="support-pulse">
+        <div class="pulse-label">LIVE SUPPORT TICKETS</div>
+        <div class="pulse-content" id="pulse-content"></div>
+    </div>
+
+    <header class="header-section animate-fade-in stagger-1">
+        <h1>Support Intelligence & Sentiment</h1>
+        <p>Real-time analytics of customer satisfaction, ticket volume, and retention risk factors.</p>
+    </header>
+
+    <section class="stats-grid">
+        <div class="card animate-fade-in stagger-2">
+            <div class="card-title">CUSTOMER SENTIMENT <i class="fas fa-smile"></i></div>
+            <div class="gauge-container">
+                <div class="gauge-bg"></div>
+                <div class="gauge-fill" id="sentiment-gauge"></div>
+                <div class="gauge-value" id="sentiment-value">0.0</div>
+            </div>
+        </div>
+        <div class="card animate-fade-in stagger-3">
+            <div class="card-title">DAILY RESOLUTION GOAL <i class="fas fa-flag-checkered"></i></div>
+            <div id="goal-value" class="card-value" data-target="0" data-suffix="%">0%</div>
+            <div style="height:8px; background:rgba(0,0,0,0.05); border-radius:4px; margin-top:15px; overflow:hidden;">
+                <div id="goal-bar" style="height:100%; background:var(--primary-color); width:0%; transition:width 1s;"></div>
+            </div>
+        </div>
+        <div class="card animate-fade-in stagger-4">
+            <div class="card-title">RESPONSE LOAD (24H) <i class="fas fa-clock"></i></div>
+            <div id="resp-value" class="card-value" data-target="0" data-suffix="m">0m</div>
+            <div class="heatmap-grid" id="heatmap-grid"></div>
+        </div>
+        <div class="card animate-fade-in stagger-5">
+            <div class="card-title">RESOLUTION RATE <i class="fas fa-check-double"></i></div>
+            <div id="res-rate-value" class="card-value" data-target="0" data-suffix="%">0%</div>
+            <div id="res-rate-trend" class="card-trend trend-up"></div>
+        </div>
+    </section>
+
+    <div class="charts-row">
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">WEEKLY SATISFACTION TREND <i class="fas fa-chart-line"></i></div>
+            <div class="chart-container"><canvas id="satisfactionChart"></canvas></div>
+        </div>
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">SENTIMENT ANALYSIS <i class="fas fa-brain"></i></div>
+            <div class="chart-container"><canvas id="sentimentDoughnut"></canvas></div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <section class="card">
+            <div class="card-title">CRITICAL TICKETS <span class="badge badge-danger">Urgent</span></div>
+            <table>
+                <thead><tr><th>Customer</th><th>Issue</th><th>Priority</th><th>Wait</th></tr></thead>
+                <tbody id="ticket-table-body"></tbody>
+            </table>
+        </section>
+        <aside class="card">
+            <div class="card-title">RETENTION SIGNALS <i class="fas fa-user-check"></i></div>
+            <div id="signal-container"></div>
+        </aside>
+    </div>
+
+    <script>
+        function applyTheme(theme) { document.documentElement.setAttribute('data-theme', theme); }
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'THEME_UPDATE') applyTheme(event.data.theme);
+            if (event.data.type === 'DATABASE_UPDATE') fetchData();
+        });
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) applyTheme(savedTheme);
+
+        const API_URL = '/api/support';
+
+        async function fetchData() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+                const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) { console.error(error); }
+        }
+
+        function updateDashboard(data) {
+            if (!data) return;
+            try {
+                if (data.tickets) {
+                    document.getElementById('pulse-content').innerHTML = data.tickets.map(t => `
+                        <span style="margin-right:50px;"><i class="fas fa-${t.type==='new'?'ticket-alt':'check-circle'}"></i> ${t.text}</span>
+                    `).join('');
+                }
+                if (data.kpis) {
+                    document.getElementById('sentiment-value').innerText = data.kpis.sentiment.value;
+                    const rot = -45 + (180 * (data.kpis.sentiment.value / 5));
+                    document.getElementById('sentiment-gauge').style.transform = `rotate(${rot}deg)`;
+                    document.getElementById('goal-value').setAttribute('data-target', data.kpis.resolutionGoal.value);
+                    document.getElementById('goal-bar').style.width = data.kpis.resolutionGoal.value + '%';
+                    document.getElementById('resp-value').setAttribute('data-target', data.kpis.responseTime.value);
+                    document.getElementById('res-rate-value').setAttribute('data-target', data.kpis.resolutionRate.value);
+                    document.getElementById('res-rate-trend').innerHTML = `<i class="fas fa-arrow-up"></i> ${data.kpis.resolutionRate.trend}% healthy`;
+                }
+                if (data.heatmap) {
+                    document.getElementById('heatmap-grid').innerHTML = data.heatmap.map(h => `<div class="heat-cell heat-${h}"></div>`).join('');
+                }
+                if (data.criticalTickets) {
+                    document.getElementById('ticket-table-body').innerHTML = data.criticalTickets.map(t => `
+                        <tr><td><strong>${t.customer}</strong></td><td>${t.issue}</td>
+                        <td><span class="badge badge-${t.priority==='Critical'?'danger':'warning'}">${t.priority}</span></td>
+                        <td>${t.waitTime}</td></tr>
+                    `).join('');
+                }
+                if (data.retentionSignals) {
+                    document.getElementById('signal-container').innerHTML = data.retentionSignals.map(s => `
+                        <div class="retention-item" ${s.color ? 'style="border-left-color:var(--'+s.color+'-color);"' : ''}>
+                            <div class="retention-icon"><i class="fas fa-${s.type}"></i></div>
+                            <div class="retention-text">${s.text}</div>
+                            <div class="retention-status">${s.status}</div>
+                        </div>
+                    `).join('');
+                }
+                animateNumbers();
+                initCharts(data.satisfactionChart, data.sentimentAnalysis);
+            } catch (err) { console.error(err); }
+        }
+
+        function animateNumbers() {
+            document.querySelectorAll('.card-value').forEach(counter => {
+                const target = +counter.getAttribute('data-target') || 0;
+                const suffix = counter.getAttribute('data-suffix') || '';
+                let count = 0;
+                const update = () => {
+                    count += target / 50;
+                    if (count < target) {
+                        counter.innerText = (target > 10 ? Math.floor(count) : count.toFixed(1)) + suffix;
+                        requestAnimationFrame(update);
+                    } else { counter.innerText = target + suffix; }
+                };
+                update();
+            });
+        }
+
+        function initCharts(satData, sentData) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const color = isDark ? '#9ca3af' : '#4b5563';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+            const satCtx = document.getElementById('satisfactionChart').getContext('2d');
+            if (window.satChartInst) window.satChartInst.destroy();
+            window.satChartInst = new Chart(satCtx, {
+                type: 'line',
+                data: {
+                    labels: satData ? satData.labels : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+                    datasets: [{ label: 'CSAT', data: satData ? satData.data : [4.2,4.4,4.1,4.6,4.8,4.7,4.8], borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 4, max: 5, ticks: { color: color }, grid: { color: gridColor } }, x: { ticks: { color: color }, grid: { display: false } } } }
+            });
+
+            const sentCtx = document.getElementById('sentimentDoughnut').getContext('2d');
+            if (window.sentChartInst) window.sentChartInst.destroy();
+            window.sentChartInst = new Chart(sentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: sentData ? sentData.labels : ["Delighted", "Satisfied", "Neutral", "Frustrated"],
+                    datasets: [{ data: sentData ? sentData.data : [65, 22, 10, 3], backgroundColor: ['#10b981', '#34d399', '#94a3b8', '#ef4444'], borderWeight: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: color, boxWidth: 12, font: { size: 10 } } } }, cutout: '70%' }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+</body>
+</html>

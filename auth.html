@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prometheus | Secure Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand h1 {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2rem;
+        }
+
+        .brand p {
+            color: var(--text-dim);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 0.875rem;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.875rem 1rem 0.875rem 2.75rem;
+            border-radius: 0.75rem;
+            color: white;
+            font-size: 0.9375rem;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.875rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .toggle-mode {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-dim);
+        }
+
+        .toggle-mode a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .toggle-mode a:hover {
+            text-decoration: underline;
+        }
+
+        #message {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            display: none;
+        }
+
+        .error { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .success { background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="brand">
+            <h1>PROMETHEUS</h1>
+            <p id="mode-text">Welcome back! Please login to continue.</p>
+        </div>
+
+        <form id="auth-form">
+            <div class="form-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" placeholder="name@company.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" id="submit-btn">Sign In</button>
+            
+            <div id="biometric-login-section" style="display: none; margin-top: 1rem;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1rem;">
+                    <hr style="flex-grow: 1; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <span style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Or Secure Access</span>
+                    <hr style="flex-grow: 1; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
+                </div>
+                <button type="button" id="biometric-btn" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); color: var(--primary);">
+                    <i class="fas fa-fingerprint" style="margin-right: 8px;"></i> Use Fingerprint
+                </button>
+            </div>
+        </form>
+
+        <div id="message"></div>
+
+        <div class="toggle-mode">
+            <span id="toggle-text">Don't have an account?</span>
+            <a href="#" id="toggle-link">Sign Up</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
+    <script type="module">
+        // These will be injected by the server or hardcoded here for simplicity in this setup
+        const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const form = document.getElementById('auth-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submit-btn');
+        const modeText = document.getElementById('mode-text');
+        const toggleLink = document.getElementById('toggle-link');
+        const toggleText = document.getElementById('toggle-text');
+        const messageDiv = document.getElementById('message');
+        const biometricSection = document.getElementById('biometric-login-section');
+        const biometricBtn = document.getElementById('biometric-btn');
+
+        let isLogin = true;
+
+        // Check for WebAuthn support
+        const checkBiometricSupport = async () => {
+            if (window.PublicKeyCredential && 
+                await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) {
+                // If we have a saved credential, show the biometric button
+                const savedCred = localStorage.getItem('biometric_credential_id');
+                if (savedCred && isLogin) {
+                    biometricSection.style.display = 'block';
+                }
+            }
+        };
+        checkBiometricSupport();
+
+        biometricBtn.addEventListener('click', async () => {
+            try {
+                // This is a simplified "Local Biometric Lock"
+                // In a production app, this would use a real WebAuthn challenge from Supabase
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+                
+                const credentialId = localStorage.getItem('biometric_credential_id');
+                if (!credentialId) {
+                    alert("Please log in with your password first to set up Fingerprint.");
+                    return;
+                }
+
+                const assertion = await navigator.credentials.get({
+                    publicKey: {
+                        challenge: challenge,
+                        timeout: 60000,
+                        userVerification: "required",
+                        allowCredentials: [{
+                            id: Uint8Array.from(atob(credentialId), c => c.charCodeAt(0)),
+                            type: "public-key"
+                        }]
+                    }
+                });
+
+                if (assertion) {
+                    // Biometric success! For this demo, we auto-fill the last used email
+                    const lastEmail = localStorage.getItem('last_logged_in_email');
+                    const lastPass = localStorage.getItem('last_logged_in_pass');
+                    if (lastEmail && lastPass) {
+                        emailInput.value = lastEmail;
+                        passwordInput.value = lastPass;
+                        form.dispatchEvent(new Event('submit'));
+                    }
+                }
+            } catch (err) {
+                console.error("Biometric login failed:", err);
+                messageDiv.textContent = "Fingerprint check failed. Please use your password.";
+                messageDiv.className = 'error';
+                messageDiv.style.display = 'block';
+            }
+        });
+
+        async function registerBiometrics() {
+            try {
+                const challenge = new Uint8Array(32);
+                window.crypto.getRandomValues(challenge);
+                const userId = new Uint8Array(16);
+                window.crypto.getRandomValues(userId);
+
+                const credential = await navigator.credentials.create({
+                    publicKey: {
+                        challenge: challenge,
+                        rp: { name: "Prometheus Admin" },
+                        user: {
+                            id: userId,
+                            name: emailInput.value,
+                            displayName: emailInput.value.split('@')[0]
+                        },
+                        pubKeyCredParams: [{ type: "public-key", alg: -7 }],
+                        timeout: 60000,
+                        authenticatorSelection: {
+                            authenticatorAttachment: "platform",
+                            userVerification: "required"
+                        }
+                    }
+                });
+
+                if (credential) {
+                    const idBase64 = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+                    localStorage.setItem('biometric_credential_id', idBase64);
+                    localStorage.setItem('last_logged_in_email', emailInput.value);
+                    localStorage.setItem('last_logged_in_pass', passwordInput.value);
+                    return true;
+                }
+            } catch (err) {
+                console.warn("Biometric registration skipped or failed:", err);
+                return false;
+            }
+        }
+
+        toggleLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLogin = !isLogin;
+            
+            submitBtn.textContent = isLogin ? 'Sign In' : 'Create Account';
+            modeText.textContent = isLogin ? 'Welcome back! Please login to continue.' : 'Start your journey with Prometheus.';
+            toggleText.textContent = isLogin ? "Don't have an account?" : "Already have an account?";
+            toggleLink.textContent = isLogin ? 'Sign Up' : 'Login';
+            messageDiv.style.display = 'none';
+            biometricSection.style.display = 'none';
+            if (isLogin) checkBiometricSupport();
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log("Form submitted. Mode:", isLogin ? "Login" : "Signup");
+            
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                console.error("Email or password missing");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = isLogin ? 'Signing In...' : 'Creating Account...';
+            messageDiv.style.display = 'none';
+            
+            try {
+                let result;
+                if (isLogin) {
+                    console.log("Attempting sign in for:", email);
+                    result = await supabase.auth.signInWithPassword({ email, password });
+                } else {
+                    console.log("Attempting sign up for:", email);
+                    result = await supabase.auth.signUp({ 
+                        email, 
+                        password,
+                        options: {
+                            emailRedirectTo: window.location.origin + '/index.html'
+                        }
+                    });
+                }
+
+                const { data, error } = result;
+
+                if (error) {
+                    console.error("Auth error:", error.message);
+                    messageDiv.textContent = error.message;
+                    messageDiv.className = 'error';
+                    messageDiv.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = isLogin ? 'Sign In' : 'Create Account';
+                } else {
+                    console.log("Auth success:", data);
+                    
+                    // If login is successful, offer to set up biometrics
+                    if (isLogin && !localStorage.getItem('biometric_credential_id')) {
+                        if (confirm("Would you like to enable Fingerprint Login for next time?")) {
+                            await registerBiometrics();
+                        }
+                    }
+
+                    if (!isLogin && data.user && data.session === null) {
+                        messageDiv.textContent = "Check your email for a confirmation link!";
+                        messageDiv.className = 'success';
+                        messageDiv.style.display = 'block';
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Check Email';
+                    } else {
+                        console.log("Redirecting to index.html...");
+                        window.location.href = 'index.html';
+                    }
+                }
+            } catch (err) {
+                console.error("Unexpected error during auth:", err);
+                messageDiv.textContent = "An unexpected error occurred. Please check the console.";
+                messageDiv.className = 'error';
+                messageDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = isLogin ? 'Sign In' : 'Create Account';
+            }
+        });
+
+        // Redirect if already logged in
+        async function checkSession() {
+            const { data } = await supabase.auth.getSession();
+            if (data.session) {
+                window.location.href = 'index.html';
+            }
+        }
+        checkSession();
+    </script>
+</body>
+</html>

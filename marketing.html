@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Dashboard</title>
+    <!-- Modern font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .charts-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; margin-bottom: 40px; }
+        .chart-container { position: relative; height: 320px; width: 100%; }
+        .page-container { background: transparent !important; padding: 48px; }
+        
+        /* Funnel Visualizer */
+        .funnel-container { position: relative; height: 200px; width: 100%; margin-top: 20px; }
+
+        /* A/B Test Lab */
+        .ab-test-card { background: linear-gradient(135deg, #064e3b 0%, #111827 100%) !important; color: white !important; }
+        .ab-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-top: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .ab-label { font-size: 0.75rem; font-weight: 800; opacity: 0.7; }
+        .ab-headline { font-weight: 700; font-size: 0.9rem; flex-grow: 1; margin: 0 15px; }
+        .ab-winner { color: #10b981; font-weight: 800; }
+        
+        /* Hotness Animation */
+        .hot-icon { color: #ef4444; animation: flicker 1s infinite alternate; margin-left: 8px; }
+        @keyframes flicker { 0% { opacity: 0.5; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); } }
+
+        /* Social Proof Pulse */
+        .acquisition-pulse {
+            background: rgba(16, 185, 129, 0.1); backdrop-filter: blur(8px);
+            color: var(--text-main); padding: 12px 24px; margin: -48px -48px 48px -48px;
+            display: flex; align-items: center; overflow: hidden; white-space: nowrap;
+            font-size: 0.9rem; border-bottom: 1px solid var(--card-border);
+        }
+        .pulse-label { background: var(--primary-color); padding: 4px 10px; border-radius: 6px; font-weight: 800; color: white; margin-right: 20px; font-size: 0.75rem; }
+        .pulse-content { display: inline-block; animation: ticker 25s linear infinite; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+    </style>
+</head>
+<body class="page-container">
+    <div id="direct-access-header" style="display:none; background: var(--primary-color); color: white; padding: 10px; text-align: center; border-radius: 10px; margin-bottom: 20px;">
+        You are viewing a sub-page. <a href="index.html" style="color: white; font-weight: 800; text-decoration: underline;">Click here to open the Main Dashboard</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
+    <script>
+        if (window.self === window.top) document.getElementById('direct-access-header').style.display = 'block';
+        const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
+
+    <!-- Live Acquisition Pulse -->
+    <div class="acquisition-pulse">
+        <div class="pulse-label">LIVE ACQUISITIONS</div>
+        <div class="pulse-content" id="pulse-content"></div>
+    </div>
+
+    <header class="header-section animate-fade-in stagger-1">
+        <h1>Marketing & Distribution</h1>
+        <p>Analyzing traffic performance, content engagement, and demand generation strategy.</p>
+    </header>
+
+    <!-- KPI Section -->
+    <section class="stats-grid">
+        <div class="card animate-fade-in stagger-2" id="kpi-visitors">
+            <div class="card-title">MONTHLY VISITORS <i class="fas fa-globe"></i></div>
+            <div class="card-value" data-target="0">0</div>
+            <div class="card-trend"></div>
+        </div>
+        <div class="card animate-fade-in stagger-3" id="kpi-ctr">
+            <div class="card-title">CLICK-THROUGH RATE <i class="fas fa-mouse-pointer"></i></div>
+            <div class="card-value" data-target="0" data-suffix="%">0</div>
+            <div class="card-trend"></div>
+        </div>
+        <div class="card animate-fade-in stagger-4" id="kpi-signups">
+            <div class="card-title">NEW USER SIGNUPS <i class="fas fa-user-plus"></i></div>
+            <div class="card-value" data-target="0">0</div>
+            <div class="card-trend"></div>
+        </div>
+        <div class="card animate-fade-in stagger-5">
+            <div class="card-title">CONVERSION FUNNEL <i class="fas fa-filter"></i></div>
+            <div class="funnel-container"><canvas id="conversionFunnelChart"></canvas></div>
+        </div>
+    </section>
+
+    <div class="charts-row">
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">TRAFFIC PERFORMANCE BY CHANNEL <i class="fas fa-chart-bar"></i></div>
+            <div class="chart-container"><canvas id="trafficChart"></canvas></div>
+        </div>
+        <div class="card ab-test-card animate-fade-in stagger-6" id="ab-test-container">
+            <div class="card-title" style="color:white; opacity:0.8;">MESSAGING EXPERIMENT LAB <i class="fas fa-flask"></i></div>
+            <div id="ab-test-content"></div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <section class="card animate-fade-in stagger-6">
+            <div class="card-title">CONTENT PERFORMANCE TRACKING <span class="badge badge-primary">Active Assets</span></div>
+            <table>
+                <thead><tr><th>Content Title</th><th>Distribution Channel</th><th>Engagement</th><th>Conversion</th></tr></thead>
+                <tbody id="marketing-table-body"></tbody>
+            </table>
+        </section>
+        <aside class="card animate-fade-in stagger-6">
+            <div class="card-title">CHANNEL EFFECTIVENESS <i class="fas fa-bullseye"></i></div>
+            <div class="chart-container" style="height: 220px;"><canvas id="effectivenessChart"></canvas></div>
+        </aside>
+    </div>
+
+    <script>
+        function applyTheme(theme) { document.documentElement.setAttribute('data-theme', theme); }
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'THEME_UPDATE') applyTheme(event.data.theme);
+            if (event.data.type === 'DATABASE_UPDATE') fetchData();
+        });
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) applyTheme(savedTheme);
+
+        const API_URL = '/api/marketing';
+
+        async function fetchData() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+                const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) { console.error('Error fetching data:', error); }
+        }
+
+        function updateDashboard(data) {
+            if (!data) return;
+            try {
+                // Pulse Update
+                if (data.acquisitions && document.getElementById('pulse-content')) {
+                    document.getElementById('pulse-content').innerHTML = data.acquisitions.map(a => `
+                        <span style="margin-right:50px;"><i class="fas fa-${a.icon || 'user'}"></i> ${a.text} <strong>(${a.time})</strong></span>
+                    `).join('');
+                }
+
+                // KPIs Update
+                if (data.kpis) {
+                    const map = { monthlyVisitors: 'kpi-visitors', ctr: 'kpi-ctr', newSignups: 'kpi-signups' };
+                    Object.keys(map).forEach(key => {
+                        const kpi = data.kpis[key];
+                        const el = document.getElementById(map[key]);
+                        if (kpi && el) {
+                            const valEl = el.querySelector('.card-value');
+                            const trendEl = el.querySelector('.card-trend');
+                            if (valEl) {
+                                valEl.setAttribute('data-target', kpi.value || 0);
+                                valEl.setAttribute('data-suffix', kpi.suffix || '');
+                            }
+                            if (trendEl) {
+                                const isUp = (kpi.trend || 0) >= 0;
+                                trendEl.className = `card-trend trend-${isUp ? 'up' : 'down'}`;
+                                trendEl.innerHTML = `<i class="fas fa-arrow-${isUp ? 'up' : 'down'}"></i> ${Math.abs(kpi.trend || 0)}% ${isUp ? 'increase' : 'decrease'}`;
+                            }
+                        }
+                    });
+                }
+
+                // A/B Tests Update
+                if (data.abTests && document.getElementById('ab-test-content')) {
+                    document.getElementById('ab-test-content').innerHTML = data.abTests.map(test => `
+                        <div class="ab-item" ${test.winner ? 'style="border-color:#10b981;"' : ''}>
+                            <span class="ab-label" ${test.winner ? 'style="color:#10b981;"' : ''}>${test.label}</span>
+                            <span class="ab-headline">${test.headline}</span>
+                            <span class="${test.winner ? 'ab-winner' : ''}">${test.cr} CR</span>
+                        </div>
+                    `).join('');
+                }
+
+                // Content Table Update - EXTRA SAFE
+                const tbody = document.getElementById('marketing-table-body');
+                if (tbody) {
+                    const contentData = (data.contentPerformance && data.contentPerformance.length > 0) 
+                        ? data.contentPerformance 
+                        : [
+                            { title: "2026 ERP Trends Report", channel: "LinkedIn Organic", engagement: "8.4%", conversion: "4.2%", hot: true },
+                            { title: "Scaling Cloud Infrastructure", channel: "Technical Blog", engagement: "6.2%", conversion: "2.8%", hot: false }
+                        ];
+
+                    tbody.innerHTML = contentData.map(cp => `
+                        <tr>
+                            <td><strong>${cp.title || 'Untitled'}</strong> ${cp.hot ? '<i class="fas fa-fire hot-icon"></i>' : ''}</td>
+                            <td>${cp.channel || 'Direct'}</td>
+                            <td><span class="badge badge-success">${cp.engagement || '0%'}</span></td>
+                            <td><span style="font-weight:800; color:var(--primary-color);">${cp.conversion || '0%'}</span></td>
+                        </tr>
+                    `).join('');
+                }
+
+                animateNumbers();
+                initCharts(data.trafficChart, data.effectivenessChart, data.conversionFunnel);
+            } catch (err) { console.error('Error in updateDashboard:', err); }
+        }
+
+        function animateNumbers() {
+            document.querySelectorAll('.card-value').forEach(counter => {
+                const target = +counter.getAttribute('data-target') || 0;
+                const suffix = counter.getAttribute('data-suffix') || '';
+                let count = 0;
+                const update = () => {
+                    count += target / 50;
+                    if (count < target) {
+                        counter.innerText = (target > 100 ? Math.floor(count).toLocaleString() : count.toFixed(1)) + suffix;
+                        requestAnimationFrame(update);
+                    } else { counter.innerText = target.toLocaleString() + suffix; }
+                };
+                update();
+            });
+        }
+
+        function initCharts(trafficData, effectivenessData, funnelData) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const color = isDark ? '#9ca3af' : '#4b5563';
+            const gridColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+            
+            const trafficCanvas = document.getElementById('trafficChart');
+            if (trafficCanvas) {
+                if (window.trafficChartInst) window.trafficChartInst.destroy();
+                window.trafficChartInst = new Chart(trafficCanvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: trafficData ? trafficData.labels : ['Search', 'Social', 'Direct', 'Email', 'Referral'],
+                        datasets: [{ label: 'Visitors', data: trafficData ? trafficData.data : [0,0,0,0,0], backgroundColor: '#10b981', borderRadius: 8 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: color }, grid: { color: gridColor } }, x: { ticks: { color: color }, grid: { display: false } } } }
+                });
+            }
+
+            const funnelCanvas = document.getElementById('conversionFunnelChart');
+            if (funnelCanvas) {
+                if (window.funnelChartInst) window.funnelChartInst.destroy();
+                window.funnelChartInst = new Chart(funnelCanvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: funnelData ? funnelData.labels : ["Impressions", "Clicks", "Demos", "Signups"],
+                        datasets: [{ data: funnelData ? funnelData.data : [0,0,0,0], backgroundColor: ['#10b981', '#059669', '#065f46', '#064e3b'], borderRadius: 5 }]
+                    },
+                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { ticks: { color: color, font: { weight: 'bold' } }, grid: { display: false } } } }
+                });
+            }
+
+            const effectivenessCanvas = document.getElementById('effectivenessChart');
+            if (effectivenessCanvas) {
+                if (window.effectivenessChartInst) window.effectivenessChartInst.destroy();
+                window.effectivenessChartInst = new Chart(effectivenessCanvas.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: effectivenessData ? effectivenessData.labels : ['Reach', 'Cost', 'Conversion', 'Retention', 'Speed'],
+                        datasets: [{ label: 'Organic', data: effectivenessData ? effectivenessData.data : [0,0,0,0,0], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)' }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { angleLines: { color: gridColor }, grid: { color: gridColor }, ticks: { display: false }, pointLabels: { color: color } } } }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Dashboard</title>
+    <!-- Modern font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <!-- Leaflet.js for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .charts-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; margin-bottom: 40px; }
+        .chart-container { position: relative; height: 320px; width: 100%; }
+        .page-container { background: transparent !important; padding: 48px; }
+        .stats-grid { gap: 32px; margin-bottom: 40px; }
+        .card-title { font-size: 0.8rem; letter-spacing: 0.05em; }
+        .revenue-ticker-container {
+            background: rgba(16, 185, 129, 0.1);
+            backdrop-filter: blur(8px);
+            color: var(--text-main);
+            padding: 12px 24px;
+            margin: -48px -48px 48px -48px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .ticker-label { background: var(--primary-color); padding: 4px 10px; border-radius: 6px; font-weight: 800; color: white; margin-right: 20px; font-size: 0.75rem; }
+        .ticker-content { display: inline-block; animation: ticker 30s linear infinite; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .ticker-item { margin-right: 50px; display: inline-flex; align-items: center; gap: 10px; }
+        .leaderboard-item { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .rank-badge { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; }
+        .rank-1 { background: #fbbf24; color: #78350f; }
+        .rank-2 { background: #94a3b8; color: #1e293b; }
+        .rank-3 { background: #b45309; color: #fff; }
+        .progress-bar { height: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+        .progress-fill { height: 100%; background: var(--primary-color); }
+        .projection-card { background: linear-gradient(135deg, #065f46 0%, #064e3b 100%) !important; color: white !important; }
+        .projection-card .card-title, .projection-card .card-value { color: white !important; }
+        [data-theme="dark"] .progress-bar { background: rgba(255,255,255,0.05); }
+        #revenueMap { height: 100%; width: 100%; border-radius: 12px; z-index: 1; }
+        .leaflet-container { background: transparent !important; }
+        .map-tooltip { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); font-family: 'Inter', sans-serif; border-radius: 8px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body class="page-container">
+    <div id="direct-access-header" style="display:none; background: var(--primary-color); color: white; padding: 10px; text-align: center; border-radius: 10px; margin-bottom: 20px;">
+        You are viewing a sub-page. <a href="index.html" style="color: white; font-weight: 800; text-decoration: underline;">Click here to open the Main Dashboard</a>
+    </div>
+    <script>
+        if (window.self === window.top) {
+            document.getElementById('direct-access-header').style.display = 'block';
+        }
+    </script>
+    <div class="skeleton-overlay"><div class="skeleton-pulse"></div></div>
+
+    <div class="revenue-ticker-container">
+        <div class="ticker-label">REAL-TIME REVENUE PULSE</div>
+        <div class="ticker-content">
+            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> New Enterprise Sale: Nexus ERP <strong>+$4,500</strong></span>
+            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> Annual Renewal: DataGuard Pro <strong>+$299</strong></span>
+            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> Product Upgrade: CloudSync <strong>+$1,200</strong></span>
+            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> New Software Sale: Streamline Flow <strong>+$450</strong></span>
+        </div>
+    </div>
+
+    <header class="header-section animate-fade-in stagger-1">
+        <h1>Sales Revenue Dashboard</h1>
+        <p>Comprehensive tracking of revenue inflow and customer conversion performance.</p>
+    </header>
+
+    <section class="stats-grid">
+        <div class="card animate-fade-in stagger-2">
+            <div class="card-title">CURRENT DAILY SALES <i class="fas fa-cash-register"></i></div>
+            <div class="card-value" data-target="12450" data-prefix="$">0</div>
+            <div class="card-trend trend-up"><i class="fas fa-arrow-up"></i> 8.2% increase</div>
+        </div>
+        <div class="card animate-fade-in stagger-3">
+            <div class="card-title">CUSTOMER CONVERSION RATE <i class="fas fa-filter"></i></div>
+            <div class="card-value" data-target="3.8" data-suffix="%">0</div>
+            <div class="card-trend trend-up"><i class="fas fa-arrow-up"></i> 0.5% increase</div>
+        </div>
+        <div class="card animate-fade-in stagger-4">
+            <div class="card-title">AVERAGE ORDER VALUE <i class="fas fa-shopping-bag"></i></div>
+            <div class="card-value" data-target="1250" data-prefix="$">0</div>
+            <div class="card-trend trend-down"><i class="fas fa-arrow-down"></i> 2% decrease</div>
+        </div>
+        <div class="card projection-card animate-fade-in stagger-5">
+            <div class="card-title">30-DAY REVENUE PROJECTION <i class="fas fa-magic"></i></div>
+            <div id="projected-value" class="card-value" style="font-size: 1.8rem;">$47,310</div>
+            <div style="margin-top: 20px;">
+                <label style="font-size: 0.7rem; font-weight: 700; opacity: 0.8;">ADJUST CONVERSION PARAMETER:</label>
+                <input type="range" id="conv-slider" min="1" max="10" step="0.1" value="3.8" style="width: 100%;">
+            </div>
+        </div>
+    </section>
+
+    <div class="charts-row">
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">WEEKLY SALES PERFORMANCE TREND <i class="fas fa-chart-line"></i></div>
+            <div class="chart-container"><canvas id="salesTrendChart"></canvas></div>
+        </div>
+        <div class="card animate-fade-in stagger-6" style="padding: 10px;">
+            <div class="card-title" style="margin: 15px 15px 10px 15px;">GLOBAL REVENUE HEATMAP <i class="fas fa-globe-americas"></i></div>
+            <div class="chart-container" style="height: 280px; padding: 0 10px 10px 10px;">
+                <div id="revenueMap"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <section class="card animate-fade-in stagger-6">
+            <div class="card-title">LIVE REVENUE TRANSACTION FEED <span class="badge badge-success">Live Feed</span></div>
+            <table>
+                <thead>
+                    <tr><th>Customer Name</th><th>Product Purchased</th><th>Transaction Amount</th><th>Revenue Type</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>TechGlobal Incorporated</strong></td><td>Nexus ERP Suite</td><td><span style="font-weight:800; color:var(--primary-color);">$4,500</span></td><td><span class="badge badge-primary">Subscription</span></td></tr>
+                    <tr><td><strong>Sarah Jenkins</strong></td><td>DataGuard Professional</td><td><span style="font-weight:800; color:var(--primary-color);">$199</span></td><td><span class="badge badge-success">One-time Purchase</span></td></tr>
+                    <tr><td><strong>Innovate Software Solutions</strong></td><td>CloudSync Core System</td><td><span style="font-weight:800; color:var(--primary-color);">$1,200</span></td><td><span class="badge badge-primary">Subscription</span></td></tr>
+                    <tr><td><strong>Mark Peterson</strong></td><td>Streamline Flow Automation</td><td><span style="font-weight:800; color:var(--primary-color);">$450</span></td><td><span class="badge badge-warning">Product Upgrade</span></td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <aside class="card animate-fade-in stagger-6">
+            <div class="card-title">PRIMARY REVENUE DRIVERS <i class="fas fa-trophy"></i></div>
+            <div class="chart-container" style="height: 200px;">
+                <canvas id="revenueDriverChart"></canvas>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Theme Sync Logic
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'THEME_UPDATE') {
+                applyTheme(event.data.theme);
+            }
+            if (event.data.type === 'DATABASE_UPDATE') {
+                console.log('Realtime update: Refreshing Sales data...');
+                fetchData();
+            }
+        });
+
+        // Fail-safe: Check localStorage directly
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) applyTheme(savedTheme);
+
+        const API_URL = '/api/sales';
+        let map;
+        let heatmapLayer;
+
+        function initMap() {
+            if (map) return;
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            
+            map = L.map('revenueMap', {
+                zoomControl: false,
+                attributionControl: false
+            }).setView([20, 0], 2);
+
+            const tileLayer = L.tileLayer(isDark 
+                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', 
+            { maxZoom: 19 }).addTo(map);
+
+            heatmapLayer = L.layerGroup().addTo(map);
+        }
+
+        async function fetchData() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+
+                const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Error fetching data, using static defaults:', error);
+                animateNumbers();
+                initCharts();
+            }
+        }
+
+        function updateDashboard(data) {
+            try {
+                initMap();
+                // Update Ticker
+                if (data.ticker) {
+                    const tickerContent = document.querySelector('.ticker-content');
+                    tickerContent.innerHTML = data.ticker.map(t => `
+                        <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> ${t.text} <strong>+$$${t.amount.toLocaleString()}</strong></span>
+                    `).join('');
+                }
+
+                // Update KPIs
+                if (data.kpis) {
+                    const kpiCards = document.querySelectorAll('.stats-grid .card:not(.projection-card)');
+                    const kpiKeys = ['dailySales', 'conversionRate', 'orderValue'];
+                    
+                    kpiKeys.forEach((key, index) => {
+                        const kpi = data.kpis[key];
+                        const valueElement = kpiCards[index].querySelector('.card-value');
+                        valueElement.setAttribute('data-target', kpi.value);
+                        valueElement.setAttribute('data-prefix', kpi.prefix || '');
+                        valueElement.setAttribute('data-suffix', kpi.suffix || '');
+                        
+                        const trendElement = kpiCards[index].querySelector('.card-trend');
+                        trendElement.className = `card-trend trend-${kpi.trend >= 0 ? 'up' : 'down'}`;
+                        trendElement.innerHTML = `<i class="fas fa-arrow-${kpi.trend >= 0 ? 'up' : 'down'}"></i> ${Math.abs(kpi.trend)}% ${kpi.trend >= 0 ? 'increase' : 'decrease'}`;
+                    });
+                }
+
+                // Update Heatmap
+                if (data.geospatial && heatmapLayer) {
+                    heatmapLayer.clearLayers();
+                    data.geospatial.forEach(point => {
+                        const radius = Math.sqrt(point.revenue) * 0.5;
+                        const circle = L.circleMarker([point.lat, point.lng], {
+                            radius: radius,
+                            fillColor: '#10b981',
+                            color: '#10b981',
+                            weight: 1,
+                            opacity: 0.8,
+                            fillOpacity: 0.4
+                        }).addTo(heatmapLayer);
+                        
+                        circle.bindTooltip(`<strong>${point.city}</strong><br>$${point.revenue.toLocaleString()}`, {
+                            className: 'map-tooltip',
+                            direction: 'top'
+                        });
+                    });
+                }
+
+                // Update Table
+                if (data.transactions) {
+                    const tbody = document.querySelector('table tbody');
+                    tbody.innerHTML = data.transactions.map(t => `
+                        <tr>
+                            <td><strong>${t.customer}</strong></td>
+                            <td>${t.product}</td>
+                            <td><span style="font-weight:800; color:var(--primary-color);">$$${t.amount.toLocaleString()}</span></td>
+                            <td><span class="badge badge-${t.type === 'Subscription' ? 'primary' : t.type === 'One-time Purchase' ? 'success' : 'warning'}">${t.type}</span></td>
+                        </tr>
+                    `).join('');
+                }
+
+                animateNumbers();
+                initCharts(data.salesTrend, data.revenueDrivers);
+                updateProjection();
+            } catch (err) {
+                console.error('Error updating dashboard UI:', err);
+                animateNumbers();
+                initCharts();
+            }
+        }
+
+        function animateNumbers() {
+            const counters = document.querySelectorAll('.card-value:not(#projected-value)');
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                const prefix = counter.getAttribute('data-prefix') || '';
+                const suffix = counter.getAttribute('data-suffix') || '';
+                let count = 0;
+                const update = () => {
+                    count += target / 50;
+                    if (count < target) {
+                        counter.innerText = prefix + (target > 100 ? Math.floor(count).toLocaleString() : count.toFixed(1)) + suffix;
+                        requestAnimationFrame(update);
+                    } else { counter.innerText = prefix + target.toLocaleString() + suffix; }
+                };
+                update();
+            });
+        }
+
+        const slider = document.getElementById('conv-slider');
+        const projectedDisplay = document.getElementById('projected-value');
+        
+        function updateProjection() {
+            const val = slider.value;
+            const baseDailySales = parseFloat(document.querySelector('[data-prefix="$"]').getAttribute('data-target')) || 12450;
+            const baseConv = 3.8;
+            const projected = Math.floor(baseDailySales * (val / baseConv) * 30);
+            projectedDisplay.innerText = '$' + projected.toLocaleString();
+        }
+
+        slider.addEventListener('input', updateProjection);
+
+        function initCharts(salesTrend, revenueDrivers) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const color = isDark ? '#9ca3af' : '#4b5563';
+            
+            const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+            if (window.salesChartInstance) window.salesChartInstance.destroy();
+            window.salesChartInstance = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: salesTrend && salesTrend.labels?.length ? salesTrend.labels : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Sales Revenue (USD)',
+                        data: salesTrend && salesTrend.data?.length ? salesTrend.data : [10200, 11500, 9800, 12100, 14500, 8900, 7500],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            }
+                        }
+                    },
+                    scales: { y: { ticks: { color: color } }, x: { ticks: { color: color } } }
+                }
+            });
+
+            const driverCtx = document.getElementById('revenueDriverChart').getContext('2d');
+            if (window.driverChartInstance) window.driverChartInstance.destroy();
+            window.driverChartInstance = new Chart(driverCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: revenueDrivers && revenueDrivers.labels?.length ? revenueDrivers.labels : ['Subscription Renewals', 'New Customer Acquisitions', 'Product Upgrades'],
+                    datasets: [{
+                        data: revenueDrivers && revenueDrivers.data?.length ? revenueDrivers.data : [62, 24, 14],
+                        backgroundColor: ['#10b981', '#fbbf24', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    cutout: '70%', 
+                    plugins: { legend: { position: 'bottom', labels: { color: color, boxWidth: 10 } } } 
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchData);
+    </script>
+</body>
+</html>
