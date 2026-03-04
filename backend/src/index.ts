@@ -2,17 +2,9 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import executiveRouter from './routes/executive';
-import salesRouter from './routes/sales';
-import marketingRouter from './routes/marketing';
-import financeRouter from './routes/finance';
-import operationsRouter from './routes/operations';
-import supportRouter from './routes/support';
-import payrollRouter from './routes/payroll';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { verifyUser, adminOnly } from './middleware/auth';
 
 dotenv.config();
 
@@ -20,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 app.use(cors());
 app.use(express.json());
@@ -30,6 +22,16 @@ app.use(express.json());
 const rootPath = path.join(__dirname, '../../');
 
 app.use(express.static(rootPath));
+
+// Import routers with .js extension for ESM compatibility
+import executiveRouter from './routes/executive.js';
+import salesRouter from './routes/sales.js';
+import marketingRouter from './routes/marketing.js';
+import financeRouter from './routes/finance.js';
+import operationsRouter from './routes/operations.js';
+import supportRouter from './routes/support.js';
+import payrollRouter from './routes/payroll.js';
+import { verifyUser, adminOnly } from './middleware/auth.js';
 
 // Auth Sub-Router
 const apiRouter = express.Router();

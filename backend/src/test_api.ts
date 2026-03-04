@@ -1,4 +1,4 @@
-import { supabaseAdmin as supabase } from './supabase';
+import { supabaseAdmin as supabase } from './supabase.js';
 
 async function testConnection() {
   console.log('Testing Supabase Connection...');
@@ -14,7 +14,7 @@ async function testConnection() {
       }
     } else {
       console.log('✅ Connection Successful!');
-      console.log('Found dashboards:', data.map(d => d.name));
+      console.log('Found dashboards:', data.map((d: any) => d.name));
     }
   } catch (err) {
     console.error('❌ Unexpected Error:', err);
