@@ -1,8 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "postinstall": "npm install --prefix backend",
-    "build": "cd backend && npm run build",
+    "build": "npm install --prefix backend && cd backend && npm run build",
     "dev": "npm run dev --prefix backend",
     "start": "cd backend && node dist/index.js"
   },
