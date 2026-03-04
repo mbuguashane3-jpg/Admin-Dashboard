@@ -1,5 +1,5 @@
 import express from 'express';
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
@@ -18,9 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from the project root
-// Both src/index.ts and dist/index.js are two levels deep from root
 const rootPath = path.join(__dirname, '../../');
-
 app.use(express.static(rootPath));
 
 // Import routers with .js extension for ESM compatibility
@@ -39,8 +37,13 @@ const apiRouter = express.Router();
 // 1. Verify User for ALL API calls
 apiRouter.use(verifyUser);
 
-// 2. Protect ALL POST routes (Updates) with adminOnly
-apiRouter.post('*', adminOnly);
+// 2. Protect ALL POST routes (Updates) with adminOnly check
+apiRouter.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method === 'POST') {
+    return adminOnly(req as any, res, next);
+  }
+  next();
+});
 
 // 3. Mount individual routes on the protected apiRouter
 apiRouter.use('/executive', executiveRouter);
@@ -60,5 +63,4 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on http://0.0.0.0:${PORT}`);
-  console.log(`Local Access: http://localhost:${PORT}`);
 });
