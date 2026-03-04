@@ -6,6 +6,10 @@ import { supabaseAdmin as supabase } from './supabase.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// In dev (src/migrate.ts), backend root is ../
+// In prod (dist/migrate.js), backend root is ../
+const backendRoot = path.join(__dirname, '../');
+
 const dashboards = [
   'executive',
   'finance',
@@ -18,10 +22,13 @@ const dashboards = [
 
 async function migrate() {
   console.log('Starting migration to Supabase...');
+  console.log('Looking for files in:', backendRoot);
 
   for (const name of dashboards) {
     try {
-      const filePath = path.join(__dirname, `../${name}.json`);
+      const filePath = path.join(backendRoot, `${name}.json`);
+      console.log(`Checking: ${filePath}`);
+      
       if (!fs.existsSync(filePath)) {
         console.warn(`File not found: ${filePath}, skipping...`);
         continue;
