@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response } from 'express';
-import { supabaseAdmin as supabase } from '../supabase.ts';
-import { sendCriticalAlert } from '../email.ts';
+import { supabaseAdmin as supabase } from '../supabase';
+import { sendCriticalAlert } from '../email';
 
 const router = express.Router();
 

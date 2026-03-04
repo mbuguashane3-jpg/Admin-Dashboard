@@ -2,17 +2,17 @@ import express from 'express';
 import type { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import executiveRouter from './routes/executive.ts';
-import salesRouter from './routes/sales.ts';
-import marketingRouter from './routes/marketing.ts';
-import financeRouter from './routes/finance.ts';
-import operationsRouter from './routes/operations.ts';
-import supportRouter from './routes/support.ts';
-import payrollRouter from './routes/payroll.ts';
+import executiveRouter from './routes/executive';
+import salesRouter from './routes/sales';
+import marketingRouter from './routes/marketing';
+import financeRouter from './routes/finance';
+import operationsRouter from './routes/operations';
+import supportRouter from './routes/support';
+import payrollRouter from './routes/payroll';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { verifyUser, adminOnly } from './middleware/auth.ts';
+import { verifyUser, adminOnly } from './middleware/auth';
 
 dotenv.config();
 

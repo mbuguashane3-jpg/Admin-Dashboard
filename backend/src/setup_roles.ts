@@ -1,4 +1,4 @@
-import { supabaseAdmin as supabase } from './supabase.ts';
+import { supabaseAdmin as supabase } from './supabase';
 
 async function setupRoles() {
   console.log('--- PROMETHEUS ROLE SETUP ---');
