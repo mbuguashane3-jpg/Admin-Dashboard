@@ -155,10 +155,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
     <script>
-        // Initialize Supabase
+        // Initialize Supabase safely
         const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
         const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (e) {
+            console.error("Supabase init failed", e);
+        }
 
         // Theme Sync Logic
         function applyTheme(theme) {
@@ -183,6 +188,7 @@
 
         async function fetchData() {
             try {
+                if (!supabase) throw new Error("Supabase not initialized");
                 const { data: { session } } = await supabase.auth.getSession();
                 const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
 
@@ -192,8 +198,34 @@
                 updateDashboard(data);
             } catch (error) {
                 console.error('Error fetching data, using static defaults:', error);
-                // Even on error, we should init charts with default data
-                initCharts();
+                const defaultData = {
+                    kpis: {
+                        marketValue: { value: 842.5, unit: 'M' },
+                        arr: { value: 14.2, unit: 'M' },
+                        momGrowth: { value: 18.4, unit: '%' },
+                        dau: { value: 42.5, unit: 'k' }
+                    },
+                    products: [
+                        { name: 'Nexus ERP', category: 'Enterprise Resource Planning', status: 'Healthy', traction: 'High Performance' },
+                        { name: 'CloudSync Core', category: 'Infrastructure Services', status: 'Healthy', traction: 'Stable Growth' },
+                        { name: 'DataGuard Pro', category: 'Cybersecurity Systems', status: 'Monitoring', traction: 'Growing Reach' },
+                        { name: 'Streamline Flow', category: 'Workflow Automation', status: 'Healthy', traction: 'Rising Demand' }
+                    ],
+                    signals: [
+                        { type: 'rocket', title: 'High Retention in Small Business Segment', description: 'Small and Medium Business retention hit 94%. Opportunity to expand localized marketing efforts.' },
+                        { type: 'warning', title: 'Latency Surge: Nexus Infrastructure', description: 'Cloud infrastructure costs rising for Nexus ERP. System optimization is required.' }
+                    ],
+                    revenueChart: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                        data: [8.2, 9.4, 10.1, 11.5, 12.8, 13.5, 14.2]
+                    },
+                    radarChart: {
+                        labels: ["Growth", "Retention", "Profitability", "System Health", "Market Presence"],
+                        data: [85, 92, 78, 95, 88],
+                        targets: [90, 95, 85, 90, 95]
+                    }
+                };
+                updateDashboard(defaultData);
             }
         }
 
