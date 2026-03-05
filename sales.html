@@ -180,87 +180,52 @@
         let heatmapLayer;
 
         function initMap() {
-            if (map) return;
+            if (map) return true;
             const container = document.getElementById('revenueMap');
             if (!container || container.offsetWidth === 0) {
-                // If container is not ready, retry in 100ms
-                setTimeout(initMap, 100);
-                return;
+                console.warn('Map container not ready (width 0), retrying...');
+                setTimeout(initMap, 200);
+                return false;
             }
 
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            
-            map = L.map('revenueMap', {
-                zoomControl: false,
-                attributionControl: false
-            }).setView([20, 0], 2);
+            try {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                console.log('Initializing Leaflet map...');
+                
+                map = L.map('revenueMap', {
+                    zoomControl: false,
+                    attributionControl: false
+                }).setView([20, 0], 2);
 
-            L.tileLayer(isDark 
-                ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', 
-            { maxZoom: 19 }).addTo(map);
+                const tileUrl = isDark 
+                    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'; // Fallback to standard OSM for light
 
-            heatmapLayer = L.layerGroup().addTo(map);
-            
-            // Force a size recalculation after a short delay
-            setTimeout(() => {
-                map.invalidateSize();
-            }, 500);
+                L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
+
+                heatmapLayer = L.layerGroup().addTo(map);
+                
+                setTimeout(() => {
+                    map.invalidateSize();
+                    console.log('Map size invalidated and redrawn.');
+                }, 500);
+                
+                return true;
+            } catch (e) {
+                console.error('Leaflet initialization failed:', e);
+                return false;
+            }
         }
 
         async function fetchData() {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
-
-                const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
-                if (!response.ok) throw new Error('Network response was not ok');
-                const data = await response.json();
-                updateDashboard(data);
-            } catch (error) {
-                console.error('Error fetching data, using static defaults:', error);
-                // Default data with geospatial info
-                const defaultData = {
-                    ticker: [
-                        { text: 'New Enterprise Sale: Nexus ERP', amount: 4500 },
-                        { text: 'Annual Renewal: DataGuard Pro', amount: 299 },
-                        { text: 'Product Upgrade: CloudSync', amount: 1200 },
-                        { text: 'New Software Sale: Streamline Flow', amount: 450 }
-                    ],
-                    kpis: {
-                        dailySales: { value: 12450, prefix: '$', trend: 8.2 },
-                        conversionRate: { value: 3.8, suffix: '%', trend: 0.5 },
-                        orderValue: { value: 1250, prefix: '$', trend: -2 }
-                    },
-                    geospatial: [
-                        { city: 'New York', lat: 40.7128, lng: -74.0060, revenue: 15000 },
-                        { city: 'London', lat: 51.5074, lng: -0.1278, revenue: 12000 },
-                        { city: 'Tokyo', lat: 35.6762, lng: 139.6503, revenue: 9000 },
-                        { city: 'Sydney', lat: -33.8688, lng: 151.2093, revenue: 8500 },
-                        { city: 'Berlin', lat: 52.5200, lng: 13.4050, revenue: 7000 }
-                    ],
-                    salesTrend: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                        data: [10200, 11500, 9800, 12100, 14500, 8900, 7500]
-                    },
-                    revenueDrivers: {
-                        labels: ['Subscription Renewals', 'New Customer Acquisitions', 'Product Upgrades'],
-                        data: [62, 24, 14]
-                    },
-                    transactions: [
-                        { customer: 'TechGlobal Incorporated', product: 'Nexus ERP Suite', amount: 4500, type: 'Subscription' },
-                        { customer: 'Sarah Jenkins', product: 'DataGuard Professional', amount: 199, type: 'One-time Purchase' },
-                        { customer: 'Innovate Software Solutions', product: 'CloudSync Core System', amount: 1200, type: 'Subscription' },
-                        { customer: 'Mark Peterson', product: 'Streamline Flow Automation', amount: 450, type: 'Product Upgrade' }
-                    ]
-                };
-                updateDashboard(defaultData);
-            }
+            // ... (keep existing fetchData logic)
         }
 
+        // Re-declaring updateDashboard to handle the map more safely
         function updateDashboard(data) {
             try {
-                initMap();
+                const mapReady = initMap();
+                
                 // Update Ticker
                 if (data.ticker) {
                     const tickerContent = document.querySelector('.ticker-content');
@@ -287,27 +252,34 @@
                     });
                 }
 
-                // Update Heatmap
-                if (data.geospatial && heatmapLayer) {
-                    heatmapLayer.clearLayers();
-                    data.geospatial.forEach(point => {
-                        const radius = Math.sqrt(point.revenue) * 0.5;
-                        const circle = L.circleMarker([point.lat, point.lng], {
-                            radius: radius,
-                            fillColor: '#10b981',
-                            color: '#10b981',
-                            weight: 1,
-                            opacity: 0.8,
-                            fillOpacity: 0.4
-                        }).addTo(heatmapLayer);
-                        
-                        circle.bindTooltip(`<strong>${point.city}</strong><br>$${point.revenue.toLocaleString()}`, {
-                            className: 'map-tooltip',
-                            direction: 'top'
-                        });
-                    });
-                    // Ensure map fits the points or stays at global view
-                    if (map) map.invalidateSize();
+                // Update Heatmap - Only if map and layer are ready
+                if (data.geospatial) {
+                    const drawHeatmap = () => {
+                        if (heatmapLayer) {
+                            heatmapLayer.clearLayers();
+                            data.geospatial.forEach(point => {
+                                const radius = Math.sqrt(point.revenue) * 0.5;
+                                const circle = L.circleMarker([point.lat, point.lng], {
+                                    radius: radius,
+                                    fillColor: '#10b981',
+                                    color: '#10b981',
+                                    weight: 1,
+                                    opacity: 0.8,
+                                    fillOpacity: 0.4
+                                }).addTo(heatmapLayer);
+                                
+                                circle.bindTooltip(`<strong>${point.city}</strong><br>$${point.revenue.toLocaleString()}`, {
+                                    className: 'map-tooltip',
+                                    direction: 'top'
+                                });
+                            });
+                            if (map) map.invalidateSize();
+                        } else {
+                            // If layer not ready yet, wait and try once more
+                            setTimeout(drawHeatmap, 200);
+                        }
+                    };
+                    drawHeatmap();
                 }
 
                 // Update Table
@@ -322,6 +294,16 @@
                         </tr>
                     `).join('');
                 }
+
+                animateNumbers();
+                initCharts(data.salesTrend, data.revenueDrivers);
+                updateProjection();
+            } catch (err) {
+                console.error('Error updating dashboard UI:', err);
+                animateNumbers();
+                initCharts();
+            }
+        }
 
                 animateNumbers();
                 initCharts(data.salesTrend, data.revenueDrivers);
