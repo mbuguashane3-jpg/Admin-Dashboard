@@ -172,6 +172,7 @@
 
         async function fetchData() {
             try {
+                if (!supabase) throw new Error("Supabase not initialized");
                 const { data: { session } } = await supabase.auth.getSession();
                 const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
 
