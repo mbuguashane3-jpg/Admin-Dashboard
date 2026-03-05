@@ -143,7 +143,13 @@
         </aside>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
     <script>
+        // Initialize Supabase
+        const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         // Theme Sync Logic
         function applyTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
@@ -195,8 +201,42 @@
                 updateDashboard(data);
             } catch (error) {
                 console.error('Error fetching data, using static defaults:', error);
-                animateNumbers();
-                initCharts();
+                // Default data with geospatial info
+                const defaultData = {
+                    ticker: [
+                        { text: 'New Enterprise Sale: Nexus ERP', amount: 4500 },
+                        { text: 'Annual Renewal: DataGuard Pro', amount: 299 },
+                        { text: 'Product Upgrade: CloudSync', amount: 1200 },
+                        { text: 'New Software Sale: Streamline Flow', amount: 450 }
+                    ],
+                    kpis: {
+                        dailySales: { value: 12450, prefix: '$', trend: 8.2 },
+                        conversionRate: { value: 3.8, suffix: '%', trend: 0.5 },
+                        orderValue: { value: 1250, prefix: '$', trend: -2 }
+                    },
+                    geospatial: [
+                        { city: 'New York', lat: 40.7128, lng: -74.0060, revenue: 15000 },
+                        { city: 'London', lat: 51.5074, lng: -0.1278, revenue: 12000 },
+                        { city: 'Tokyo', lat: 35.6762, lng: 139.6503, revenue: 9000 },
+                        { city: 'Sydney', lat: -33.8688, lng: 151.2093, revenue: 8500 },
+                        { city: 'Berlin', lat: 52.5200, lng: 13.4050, revenue: 7000 }
+                    ],
+                    salesTrend: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        data: [10200, 11500, 9800, 12100, 14500, 8900, 7500]
+                    },
+                    revenueDrivers: {
+                        labels: ['Subscription Renewals', 'New Customer Acquisitions', 'Product Upgrades'],
+                        data: [62, 24, 14]
+                    },
+                    transactions: [
+                        { customer: 'TechGlobal Incorporated', product: 'Nexus ERP Suite', amount: 4500, type: 'Subscription' },
+                        { customer: 'Sarah Jenkins', product: 'DataGuard Professional', amount: 199, type: 'One-time Purchase' },
+                        { customer: 'Innovate Software Solutions', product: 'CloudSync Core System', amount: 1200, type: 'Subscription' },
+                        { customer: 'Mark Peterson', product: 'Streamline Flow Automation', amount: 450, type: 'Product Upgrade' }
+                    ]
+                };
+                updateDashboard(defaultData);
             }
         }
 
