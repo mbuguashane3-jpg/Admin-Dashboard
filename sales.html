@@ -11,9 +11,6 @@
     <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
-    <!-- Leaflet.js for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="dashboard.css">
     <style>
@@ -49,15 +46,6 @@
         .projection-card { background: linear-gradient(135deg, #065f46 0%, #064e3b 100%) !important; color: white !important; }
         .projection-card .card-title, .projection-card .card-value { color: white !important; }
         [data-theme="dark"] .progress-bar { background: rgba(255,255,255,0.05); }
-        #revenueMap { 
-            height: 280px !important; 
-            width: 100% !important; 
-            border-radius: 12px; 
-            z-index: 1; 
-            background: rgba(0,0,0,0.05); /* Placeholder background */
-        }
-        .leaflet-container { background: transparent !important; }
-        .map-tooltip { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); font-family: 'Inter', sans-serif; border-radius: 8px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body class="page-container">
@@ -117,10 +105,10 @@
             <div class="card-title">WEEKLY SALES PERFORMANCE TREND <i class="fas fa-chart-line"></i></div>
             <div class="chart-container"><canvas id="salesTrendChart"></canvas></div>
         </div>
-        <div class="card animate-fade-in stagger-6" style="padding: 10px;">
-            <div class="card-title" style="margin: 15px 15px 10px 15px;">GLOBAL REVENUE HEATMAP <i class="fas fa-globe-americas"></i></div>
-            <div class="chart-container" style="height: 280px; padding: 0 10px 10px 10px; overflow: hidden;">
-                <div id="revenueMap"></div>
+        <div class="card animate-fade-in stagger-6">
+            <div class="card-title">REGIONAL REVENUE DISTRIBUTION <i class="fas fa-map-marked-alt"></i></div>
+            <div class="chart-container">
+                <canvas id="regionalRevenueChart"></canvas>
             </div>
         </div>
     </div>
@@ -176,56 +164,58 @@
         if (savedTheme) applyTheme(savedTheme);
 
         const API_URL = '/api/sales';
-        let map;
-        let heatmapLayer;
-
-        function initMap() {
-            if (map) return true;
-            const container = document.getElementById('revenueMap');
-            if (!container || container.offsetWidth === 0) {
-                console.warn('Map container not ready (width 0), retrying...');
-                setTimeout(initMap, 200);
-                return false;
-            }
-
-            try {
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-                console.log('Initializing Leaflet map...');
-                
-                map = L.map('revenueMap', {
-                    zoomControl: false,
-                    attributionControl: false
-                }).setView([20, 0], 2);
-
-                const tileUrl = isDark 
-                    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-                    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'; // Fallback to standard OSM for light
-
-                L.tileLayer(tileUrl, { maxZoom: 19 }).addTo(map);
-
-                heatmapLayer = L.layerGroup().addTo(map);
-                
-                setTimeout(() => {
-                    map.invalidateSize();
-                    console.log('Map size invalidated and redrawn.');
-                }, 500);
-                
-                return true;
-            } catch (e) {
-                console.error('Leaflet initialization failed:', e);
-                return false;
-            }
-        }
 
         async function fetchData() {
-            // ... (keep existing fetchData logic)
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+
+                const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Error fetching data, using static defaults:', error);
+                const defaultData = {
+                    ticker: [
+                        { text: 'New Enterprise Sale: Nexus ERP', amount: 4500 },
+                        { text: 'Annual Renewal: DataGuard Pro', amount: 299 },
+                        { text: 'Product Upgrade: CloudSync', amount: 1200 },
+                        { text: 'New Software Sale: Streamline Flow', amount: 450 }
+                    ],
+                    kpis: {
+                        dailySales: { value: 12450, prefix: '$', trend: 8.2 },
+                        conversionRate: { value: 3.8, suffix: '%', trend: 0.5 },
+                        orderValue: { value: 1250, prefix: '$', trend: -2 }
+                    },
+                    geospatial: [
+                        { city: 'North America', revenue: 15000 },
+                        { city: 'Europe', revenue: 12000 },
+                        { city: 'Asia Pacific', revenue: 9000 },
+                        { city: 'Latin America', revenue: 4500 },
+                        { city: 'Middle East', revenue: 3000 }
+                    ],
+                    salesTrend: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        data: [10200, 11500, 9800, 12100, 14500, 8900, 7500]
+                    },
+                    revenueDrivers: {
+                        labels: ['Subscription Renewals', 'New Customer Acquisitions', 'Product Upgrades'],
+                        data: [62, 24, 14]
+                    },
+                    transactions: [
+                        { customer: 'TechGlobal Incorporated', product: 'Nexus ERP Suite', amount: 4500, type: 'Subscription' },
+                        { customer: 'Sarah Jenkins', product: 'DataGuard Professional', amount: 199, type: 'One-time Purchase' },
+                        { customer: 'Innovate Software Solutions', product: 'CloudSync Core System', amount: 1200, type: 'Subscription' },
+                        { customer: 'Mark Peterson', product: 'Streamline Flow Automation', amount: 450, type: 'Product Upgrade' }
+                    ]
+                };
+                updateDashboard(defaultData);
+            }
         }
 
-        // Re-declaring updateDashboard to handle the map more safely
         function updateDashboard(data) {
             try {
-                const mapReady = initMap();
-                
                 // Update Ticker
                 if (data.ticker) {
                     const tickerContent = document.querySelector('.ticker-content');
@@ -252,36 +242,6 @@
                     });
                 }
 
-                // Update Heatmap - Only if map and layer are ready
-                if (data.geospatial) {
-                    const drawHeatmap = () => {
-                        if (heatmapLayer) {
-                            heatmapLayer.clearLayers();
-                            data.geospatial.forEach(point => {
-                                const radius = Math.sqrt(point.revenue) * 0.5;
-                                const circle = L.circleMarker([point.lat, point.lng], {
-                                    radius: radius,
-                                    fillColor: '#10b981',
-                                    color: '#10b981',
-                                    weight: 1,
-                                    opacity: 0.8,
-                                    fillOpacity: 0.4
-                                }).addTo(heatmapLayer);
-                                
-                                circle.bindTooltip(`<strong>${point.city}</strong><br>$${point.revenue.toLocaleString()}`, {
-                                    className: 'map-tooltip',
-                                    direction: 'top'
-                                });
-                            });
-                            if (map) map.invalidateSize();
-                        } else {
-                            // If layer not ready yet, wait and try once more
-                            setTimeout(drawHeatmap, 200);
-                        }
-                    };
-                    drawHeatmap();
-                }
-
                 // Update Table
                 if (data.transactions) {
                     const tbody = document.querySelector('table tbody');
@@ -296,17 +256,7 @@
                 }
 
                 animateNumbers();
-                initCharts(data.salesTrend, data.revenueDrivers);
-                updateProjection();
-            } catch (err) {
-                console.error('Error updating dashboard UI:', err);
-                animateNumbers();
-                initCharts();
-            }
-        }
-
-                animateNumbers();
-                initCharts(data.salesTrend, data.revenueDrivers);
+                initCharts(data.salesTrend, data.revenueDrivers, data.geospatial);
                 updateProjection();
             } catch (err) {
                 console.error('Error updating dashboard UI:', err);
@@ -346,7 +296,7 @@
 
         slider.addEventListener('input', updateProjection);
 
-        function initCharts(salesTrend, revenueDrivers) {
+        function initCharts(salesTrend, revenueDrivers, regionalData) {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const color = isDark ? '#9ca3af' : '#4b5563';
             
@@ -368,22 +318,33 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    plugins: { 
-                        legend: { display: false },
-                        zoom: {
-                            pan: { enabled: true, mode: 'x' },
-                            zoom: {
-                                wheel: { enabled: true },
-                                pinch: { enabled: true },
-                                mode: 'x'
-                            }
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: { y: { ticks: { color: color } }, x: { ticks: { color: color } } }
+                }
+            });
+
+            const regionalCtx = document.getElementById('regionalRevenueChart').getContext('2d');
+            if (window.regionalChartInstance) window.regionalChartInstance.destroy();
+            window.regionalChartInstance = new Chart(regionalCtx, {
+                type: 'bar',
+                data: {
+                    labels: regionalData ? regionalData.map(d => d.city) : ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East'],
+                    datasets: [{
+                        label: 'Revenue by Region',
+                        data: regionalData ? regionalData.map(d => d.revenue) : [15000, 12000, 9000, 4500, 3000],
+                        backgroundColor: '#10b981',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        x: { ticks: { color: color } },
+                        y: { ticks: { color: color } }
+                    }
                 }
             });
 
