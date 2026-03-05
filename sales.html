@@ -175,6 +175,13 @@
 
         function initMap() {
             if (map) return;
+            const container = document.getElementById('revenueMap');
+            if (!container || container.offsetWidth === 0) {
+                // If container is not ready, retry in 100ms
+                setTimeout(initMap, 100);
+                return;
+            }
+
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             
             map = L.map('revenueMap', {
@@ -182,12 +189,17 @@
                 attributionControl: false
             }).setView([20, 0], 2);
 
-            const tileLayer = L.tileLayer(isDark 
+            L.tileLayer(isDark 
                 ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
                 : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', 
             { maxZoom: 19 }).addTo(map);
 
             heatmapLayer = L.layerGroup().addTo(map);
+            
+            // Force a size recalculation after a short delay
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 500);
         }
 
         async function fetchData() {
@@ -247,7 +259,7 @@
                 if (data.ticker) {
                     const tickerContent = document.querySelector('.ticker-content');
                     tickerContent.innerHTML = data.ticker.map(t => `
-                        <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> ${t.text} <strong>+$$${t.amount.toLocaleString()}</strong></span>
+                        <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> ${t.text} <strong>+$${t.amount.toLocaleString()}</strong></span>
                     `).join('');
                 }
 
@@ -288,6 +300,8 @@
                             direction: 'top'
                         });
                     });
+                    // Ensure map fits the points or stays at global view
+                    if (map) map.invalidateSize();
                 }
 
                 // Update Table
@@ -297,7 +311,7 @@
                         <tr>
                             <td><strong>${t.customer}</strong></td>
                             <td>${t.product}</td>
-                            <td><span style="font-weight:800; color:var(--primary-color);">$$${t.amount.toLocaleString()}</span></td>
+                            <td><span style="font-weight:800; color:var(--primary-color);">$${t.amount.toLocaleString()}</span></td>
                             <td><span class="badge badge-${t.type === 'Subscription' ? 'primary' : t.type === 'One-time Purchase' ? 'success' : 'warning'}">${t.type}</span></td>
                         </tr>
                     `).join('');
