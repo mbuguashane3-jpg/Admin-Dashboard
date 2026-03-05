@@ -57,7 +57,12 @@
         if (window.self === window.top) document.getElementById('direct-access-header').style.display = 'block';
         const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
         const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (e) {
+            console.error("Supabase init failed", e);
+        }
     </script>
 
     <div class="support-pulse">
@@ -136,54 +141,113 @@
 
         async function fetchData() {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                const session = supabase ? (await supabase.auth.getSession()).data.session : null;
                 const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
                 const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
+                if (!response.ok) throw new Error('Backend error');
                 const data = await response.json();
                 updateDashboard(data);
-            } catch (error) { console.error(error); }
+            } catch (error) { 
+                console.error('Error fetching data, using defaults:', error);
+                const defaultData = {
+                    tickets: [
+                        { type: 'new', text: 'New Ticket: Login loop reported by User_842' },
+                        { type: 'resolved', text: 'Resolved: Billing query for Enterprise Account_12' },
+                        { type: 'new', text: 'Urgent: Latency issues in Nexus Node 4' }
+                    ],
+                    kpis: {
+                        sentiment: { value: 4.8 },
+                        resolutionGoal: { value: 94 },
+                        responseTime: { value: 12 },
+                        resolutionRate: { value: 98.2, trend: 1.5 }
+                    },
+                    heatmap: Array(24).fill('low').map((h, i) => i > 10 && i < 18 ? 'high' : 'med'),
+                    criticalTickets: [
+                        { customer: 'Global Tech Corp', issue: 'API Authentication Failure', priority: 'Critical', waitTime: '4m' },
+                        { customer: 'Sarah Jenkins', issue: 'Data Export Stalled', priority: 'High', waitTime: '15m' },
+                        { customer: 'Innovate Solutions', issue: 'UI Lag in Payroll View', priority: 'High', waitTime: '22m' }
+                    ],
+                    retentionSignals: [
+                        { type: 'smile', text: 'Positive Feedback: New UI Speed', status: 'Healthy', color: 'success' },
+                        { type: 'user-minus', text: 'Churn Alert: Reduced usage in Node 4', status: 'At Risk', color: 'danger' }
+                    ],
+                    satisfactionChart: {
+                        labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+                        data: [4.2,4.4,4.1,4.6,4.8,4.7,4.8]
+                    },
+                    sentimentAnalysis: {
+                        labels: ["Delighted", "Satisfied", "Neutral", "Frustrated"],
+                        data: [65, 22, 10, 3]
+                    }
+                };
+                updateDashboard(defaultData);
+            }
         }
 
         function updateDashboard(data) {
             if (!data) return;
             try {
                 if (data.tickets) {
-                    document.getElementById('pulse-content').innerHTML = data.tickets.map(t => `
-                        <span style="margin-right:50px;"><i class="fas fa-${t.type==='new'?'ticket-alt':'check-circle'}"></i> ${t.text}</span>
-                    `).join('');
+                    const pulse = document.getElementById('pulse-content');
+                    if (pulse) {
+                        pulse.innerHTML = data.tickets.map(t => `
+                            <span style="margin-right:50px;"><i class="fas fa-${t.type==='new'?'ticket-alt':'check-circle'}"></i> ${t.text}</span>
+                        `).join('');
+                    }
                 }
                 if (data.kpis) {
-                    document.getElementById('sentiment-value').innerText = data.kpis.sentiment.value;
-                    const rot = -45 + (180 * (data.kpis.sentiment.value / 5));
-                    document.getElementById('sentiment-gauge').style.transform = `rotate(${rot}deg)`;
-                    document.getElementById('goal-value').setAttribute('data-target', data.kpis.resolutionGoal.value);
-                    document.getElementById('goal-bar').style.width = data.kpis.resolutionGoal.value + '%';
-                    document.getElementById('resp-value').setAttribute('data-target', data.kpis.responseTime.value);
-                    document.getElementById('res-rate-value').setAttribute('data-target', data.kpis.resolutionRate.value);
-                    document.getElementById('res-rate-trend').innerHTML = `<i class="fas fa-arrow-up"></i> ${data.kpis.resolutionRate.trend}% healthy`;
+                    const sentVal = document.getElementById('sentiment-value');
+                    const sentGauge = document.getElementById('sentiment-gauge');
+                    if (sentVal) sentVal.innerText = data.kpis.sentiment.value;
+                    if (sentGauge) {
+                        const rot = -45 + (180 * (data.kpis.sentiment.value / 5));
+                        sentGauge.style.transform = `rotate(${rot}deg)`;
+                    }
+                    
+                    const goalVal = document.getElementById('goal-value');
+                    const goalBar = document.getElementById('goal-bar');
+                    if (goalVal) goalVal.setAttribute('data-target', data.kpis.resolutionGoal.value);
+                    if (goalBar) goalBar.style.width = data.kpis.resolutionGoal.value + '%';
+                    
+                    const respVal = document.getElementById('resp-value');
+                    if (respVal) respVal.setAttribute('data-target', data.kpis.responseTime.value);
+                    
+                    const resRateVal = document.getElementById('res-rate-value');
+                    const resRateTrend = document.getElementById('res-rate-trend');
+                    if (resRateVal) resRateVal.setAttribute('data-target', data.kpis.resolutionRate.value);
+                    if (resRateTrend) resRateTrend.innerHTML = `<i class="fas fa-arrow-up"></i> ${data.kpis.resolutionRate.trend}% healthy`;
                 }
                 if (data.heatmap) {
-                    document.getElementById('heatmap-grid').innerHTML = data.heatmap.map(h => `<div class="heat-cell heat-${h}"></div>`).join('');
+                    const heatGrid = document.getElementById('heatmap-grid');
+                    if (heatGrid) {
+                        heatGrid.innerHTML = data.heatmap.map(h => `<div class="heat-cell heat-${h}"></div>`).join('');
+                    }
                 }
                 if (data.criticalTickets) {
-                    document.getElementById('ticket-table-body').innerHTML = data.criticalTickets.map(t => `
-                        <tr><td><strong>${t.customer}</strong></td><td>${t.issue}</td>
-                        <td><span class="badge badge-${t.priority==='Critical'?'danger':'warning'}">${t.priority}</span></td>
-                        <td>${t.waitTime}</td></tr>
-                    `).join('');
+                    const tbody = document.getElementById('ticket-table-body');
+                    if (tbody) {
+                        tbody.innerHTML = data.criticalTickets.map(t => `
+                            <tr><td><strong>${t.customer}</strong></td><td>${t.issue}</td>
+                            <td><span class="badge badge-${t.priority==='Critical'?'danger':'warning'}">${t.priority}</span></td>
+                            <td>${t.waitTime}</td></tr>
+                        `).join('');
+                    }
                 }
                 if (data.retentionSignals) {
-                    document.getElementById('signal-container').innerHTML = data.retentionSignals.map(s => `
-                        <div class="retention-item" ${s.color ? 'style="border-left-color:var(--'+s.color+'-color);"' : ''}>
-                            <div class="retention-icon"><i class="fas fa-${s.type}"></i></div>
-                            <div class="retention-text">${s.text}</div>
-                            <div class="retention-status">${s.status}</div>
-                        </div>
-                    `).join('');
+                    const signalContainer = document.getElementById('signal-container');
+                    if (signalContainer) {
+                        signalContainer.innerHTML = data.retentionSignals.map(s => `
+                            <div class="retention-item" ${s.color ? 'style="border-left-color:var(--'+s.color+'-color);"' : ''}>
+                                <div class="retention-icon"><i class="fas fa-${s.type}"></i></div>
+                                <div class="retention-text">${s.text}</div>
+                                <div class="retention-status">${s.status}</div>
+                            </div>
+                        `).join('');
+                    }
                 }
                 animateNumbers();
                 initCharts(data.satisfactionChart, data.sentimentAnalysis);
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error('Error in updateDashboard:', err); }
         }
 
         function animateNumbers() {
@@ -213,9 +277,9 @@
                 type: 'line',
                 data: {
                     labels: satData ? satData.labels : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-                    datasets: [{ label: 'CSAT', data: satData ? satData.data : [4.2,4.4,4.1,4.6,4.8,4.7,4.8], borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4 }]
+                    datasets: [{ label: 'CSAT', data: satData ? satData.data : [0,0,0,0,0,0,0], borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4 }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 4, max: 5, ticks: { color: color }, grid: { color: gridColor } }, x: { ticks: { color: color }, grid: { display: false } } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 5, ticks: { color: color }, grid: { color: gridColor } }, x: { ticks: { color: color }, grid: { display: false } } } }
             });
 
             const sentCtx = document.getElementById('sentimentDoughnut').getContext('2d');
@@ -224,7 +288,7 @@
                 type: 'doughnut',
                 data: {
                     labels: sentData ? sentData.labels : ["Delighted", "Satisfied", "Neutral", "Frustrated"],
-                    datasets: [{ data: sentData ? sentData.data : [65, 22, 10, 3], backgroundColor: ['#10b981', '#34d399', '#94a3b8', '#ef4444'], borderWeight: 0 }]
+                    datasets: [{ data: sentData ? sentData.data : [0,0,0,0], backgroundColor: ['#10b981', '#34d399', '#94a3b8', '#ef4444'], borderWeight: 0 }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: color, boxWidth: 12, font: { size: 10 } } } }, cutout: '70%' }
             });

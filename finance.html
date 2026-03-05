@@ -58,6 +58,8 @@
             justify-content: space-between;
             min-height: 180px;
         }
+        .cashflow-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .risk-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-left: 4px solid #10b981; background: rgba(0,0,0,0.02); margin-bottom: 10px; border-radius: 0 8px 8px 0; }
     </style>
 </head>
 <body class="page-container">
@@ -66,12 +68,15 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
     <script>
-        if (window.self === window.top) {
-            document.getElementById('direct-access-header').style.display = 'block';
-        }
+        if (window.self === window.top) document.getElementById('direct-access-header').style.display = 'block';
         const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
         const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (e) {
+            console.error("Supabase init failed", e);
+        }
     </script>
     <div class="skeleton-overlay"><div class="skeleton-pulse"></div></div>
 
@@ -135,15 +140,11 @@
     </div>
 
     <script>
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-        }
-
+        function applyTheme(theme) { document.documentElement.setAttribute('data-theme', theme); }
         window.addEventListener('message', (event) => {
             if (event.data.type === 'THEME_UPDATE') applyTheme(event.data.theme);
             if (event.data.type === 'DATABASE_UPDATE') fetchData();
         });
-
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) applyTheme(savedTheme);
 
@@ -151,16 +152,42 @@
 
         async function fetchData() {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                const session = supabase ? (await supabase.auth.getSession()).data.session : null;
                 const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
-                
                 const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) throw new Error('Backend error');
                 const data = await response.json();
                 updateDashboard(data);
             } catch (error) {
-                console.error('Error fetching data:', error);
-                initCharts();
+                console.error('Error fetching data, using defaults:', error);
+                const defaultData = {
+                    kpis: {
+                        profitMargin: { value: 24.8, suffix: '%' },
+                        runway: { value: 18, unit: 'MONTHS', percentage: 75 },
+                        operatingCosts: { value: 842, prefix: '$', suffix: 'k' },
+                        auditScore: { value: 92 }
+                    },
+                    cashFlow: [
+                        { label: 'Total Inflow', value: 2.4, unit: 'M', prefix: '$', type: 'inflow' },
+                        { label: 'Total Outflow', value: 0.84, unit: 'M', prefix: '$', type: 'outflow' },
+                        { label: 'Net Cash Flow', value: 1.56, unit: 'M', prefix: '$', total: true }
+                    ],
+                    risks: [
+                        { type: 'shield-alt', title: 'Currency Fluctuation', level: 'Low Risk', color: 'success' },
+                        { type: 'exclamation-triangle', title: 'Market Volatility', level: 'Medium Risk', color: 'warning' }
+                    ],
+                    revenueCostsChart: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                        revenue: [1.1, 1.3, 1.2, 1.5, 1.8, 2.1, 2.4],
+                        costs: [0.8, 0.85, 0.82, 0.9, 0.88, 0.92, 0.84]
+                    },
+                    burnRate: {
+                        labels: ["Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+                        burn: [450, 480, 520, 490, 510, 420],
+                        cash: [4.2, 3.8, 3.2, 2.8, 2.4, 2.1]
+                    }
+                };
+                updateDashboard(defaultData);
             }
         }
 
@@ -214,15 +241,11 @@
 
                 animateNumbers();
                 initCharts(data.revenueCostsChart, data.burnRate);
-            } catch (err) {
-                console.error('Error updating UI:', err);
-                initCharts();
-            }
+            } catch (err) { console.error('Error updating UI:', err); }
         }
 
         function animateNumbers() {
-            const counters = document.querySelectorAll('.card-value');
-            counters.forEach(counter => {
+            document.querySelectorAll('.card-value').forEach(counter => {
                 const target = +counter.getAttribute('data-target') || 0;
                 const prefix = counter.getAttribute('data-prefix') || '';
                 const suffix = counter.getAttribute('data-suffix') || '';
@@ -251,8 +274,8 @@
                 data: {
                     labels: revenueData ? revenueData.labels : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
                     datasets: [
-                        { label: 'Revenue ($M)', data: revenueData ? revenueData.revenue : [1.1, 1.3, 1.2, 1.5, 1.8, 2.1, 2.4], borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4 },
-                        { label: 'Costs ($M)', data: revenueData ? revenueData.costs : [0.8, 0.85, 0.82, 0.9, 0.88, 0.92, 0.84], borderColor: '#ef4444', borderDash: [5, 5], tension: 0.4 }
+                        { label: 'Revenue ($M)', data: revenueData ? revenueData.revenue : [0,0,0,0,0,0,0], borderColor: '#10b981', fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4 },
+                        { label: 'Costs ($M)', data: revenueData ? revenueData.costs : [0,0,0,0,0,0,0], borderColor: '#ef4444', borderDash: [5, 5], tension: 0.4 }
                     ]
                 },
                 options: { 
@@ -269,8 +292,8 @@
                 data: {
                     labels: burnData ? burnData.labels : ["Feb", "Mar", "Apr", "May", "Jun", "Jul"],
                     datasets: [
-                        { label: 'Net Burn ($k)', data: burnData ? burnData.burn : [450, 480, 520, 490, 510, 420], backgroundColor: 'rgba(239, 68, 68, 0.6)', yAxisID: 'y' },
-                        { label: 'Cash ($M)', data: burnData ? burnData.cash : [4.2, 3.8, 3.2, 2.8, 2.4, 2.1], type: 'line', borderColor: '#10b981', yAxisID: 'y1' }
+                        { label: 'Net Burn ($k)', data: burnData ? burnData.burn : [0,0,0,0,0,0], backgroundColor: 'rgba(239, 68, 68, 0.6)', yAxisID: 'y' },
+                        { label: 'Cash ($M)', data: burnData ? burnData.cash : [0,0,0,0,0,0], type: 'line', borderColor: '#10b981', yAxisID: 'y1' }
                     ]
                 },
                 options: {

@@ -52,7 +52,12 @@
         if (window.self === window.top) document.getElementById('direct-access-header').style.display = 'block';
         const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
         const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (e) {
+            console.error("Supabase init failed", e);
+        }
     </script>
 
     <div class="system-ticker-container">
@@ -139,13 +144,44 @@
 
         async function fetchData() {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                const session = supabase ? (await supabase.auth.getSession()).data.session : null;
                 const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
                 const response = await fetch(API_URL + '?t=' + Date.now(), { headers });
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) throw new Error('Backend error');
                 const data = await response.json();
                 updateDashboard(data);
-            } catch (error) { console.error('Error:', error); }
+            } catch (error) { 
+                console.error('Error fetching data, using defaults:', error);
+                const defaultData = {
+                    logs: [
+                        { level: 'INFO', message: 'Nexus ERP Node 4 stabilized' },
+                        { level: 'WARN', message: 'High load detected on US-East-1' },
+                        { level: 'INFO', message: 'Automated backup completed successfully' }
+                    ],
+                    kpis: {
+                        automations: { value: 124, status: '100% Operational' },
+                        successRate: { value: 99.8, suffix: '%', status: 'Optimal Performance' },
+                        latency: { value: 42, suffix: 'ms', trend: 8 }
+                    },
+                    nodes: Array(40).fill({ status: 'healthy' }).map((n, i) => i % 15 === 0 ? { status: 'warning' } : n),
+                    workflows: [
+                        { name: 'Data Pipeline Sync', product: 'CloudSync', time: '1.2s', status: 'Optimal' },
+                        { name: 'Enterprise API Auth', product: 'Nexus ERP', time: '450ms', status: 'Optimal' },
+                        { name: 'Security Scrubbing', product: 'DataGuard', time: '2.4s', status: 'Warning' }
+                    ],
+                    loadChart: {
+                        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
+                        data: [35, 20, 65, 85, 75, 90, 45]
+                    },
+                    serverMatrix: [
+                        {x: 45, y: 120, r: 8, label: 'Node A'},
+                        {x: 75, y: 310, r: 15, label: 'Node B'},
+                        {x: 30, y: 95, r: 6, label: 'Node C'},
+                        {x: 60, y: 200, r: 10, label: 'Node D'}
+                    ]
+                };
+                updateDashboard(defaultData);
+            }
         }
 
         function updateDashboard(data) {
@@ -231,11 +267,10 @@
                 const loadCtx = loadCanvas.getContext('2d');
                 if (window.loadChartInst) window.loadChartInst.destroy();
                 window.loadChartInst = new Chart(loadCtx, {
-
                     type: 'line',
                     data: {
                         labels: loadData ? loadData.labels : ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
-                        datasets: [{ label: 'Load %', data: loadData ? loadData.data : [35, 20, 65, 85, 75, 90, 45], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 }]
+                        datasets: [{ label: 'Load %', data: loadData ? loadData.data : [0,0,0,0,0,0,0], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 }]
                     },
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: color }, grid: { color: gridColor } }, x: { ticks: { color: color }, grid: { display: false } } } }
                 });
@@ -250,7 +285,7 @@
                     data: {
                         datasets: [{
                             label: 'Server Nodes',
-                            data: matrixData || [ {x: 45, y: 120, r: 5}, {x: 75, y: 310, r: 12}, {x: 30, y: 95, r: 4} ],
+                            data: matrixData || [ {x: 0, y: 0, r: 0} ],
                             backgroundColor: (ctx) => {
                                 const val = ctx.raw ? ctx.raw.x : 0;
                                 return val > 70 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)';
@@ -305,7 +340,7 @@
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> SYSTEM HEALTHY';
                 status.innerText = 'DIAGNOSTIC COMPLETE: 0 ERRORS FOUND';
                 
-                // Visual feedback: briefly make all nodes green
+                // Visual feedback
                 const nodes = document.querySelectorAll('.node-dot');
                 nodes.forEach(n => {
                     n.style.background = '#10b981';
@@ -315,7 +350,7 @@
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fas fa-search"></i> RUN DIAGNOSTIC';
                     status.style.display = 'none';
-                    fetchData(); // Refresh to original state
+                    fetchData();
                 }, 4000);
             }
         }
