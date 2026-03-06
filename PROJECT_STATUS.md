@@ -33,6 +33,20 @@ A premium, professional, and eye-catching Admin Dashboard for an Enterprise Suit
   - **Auth:** JWT-based authentication for secure dashboard access.
 
 ## How to Resume
-1. Start the backend: `cd backend; npm run dev`
-2. Open `index.html` in a browser.
-3. We will begin by choosing a database (PostgreSQL vs MongoDB) and setting up the schema for each dashboard.
+1. **Setup Database Roles (Mandatory):** 
+   - Open your **Supabase SQL Editor**.
+   - Copy and run the following SQL to create the `profiles` table:
+     ```sql
+     CREATE TABLE public.profiles (
+       id uuid REFERENCES auth.users NOT NULL PRIMARY KEY,
+       role text CHECK (role IN ('admin', 'manager', 'analyst')) DEFAULT 'admin',
+       email text
+     );
+     ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+     CREATE POLICY "Users can view their own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
+     ```
+2. **Synchronize Roles:** Run `npm run setup-roles` to populate the `profiles` table with existing users as 'admin'.
+3. **Start the backend:** Run `npm run dev` from the project root.
+4. **Access the Dashboard:** Open your browser and go to **[http://localhost:3000](http://localhost:3000)**.
+   - **DO NOT** open `index.html` by double-clicking it in your file explorer; modern browsers block essential features (CORS, Service Workers) when opened via the `file://` protocol.
+

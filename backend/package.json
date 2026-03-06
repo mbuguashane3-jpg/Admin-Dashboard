@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "migrate": "tsx src/migrate.ts",
+    "setup-roles": "tsx src/setup_roles.ts",
     "test-conn": "tsx src/test_api.ts",
     "build": "tsc",
     "start": "node dist/index.js",

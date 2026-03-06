@@ -1,50 +1,58 @@
-import { supabaseAdmin as supabase } from './supabase.js';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  console.error('❌ ERROR: Missing credentials in .env file.');
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 async function setupRoles() {
-  console.log('--- PROMETHEUS ROLE SETUP ---');
+  console.log('--- 🛡️ PROMETHEUS ROLE REPAIR ---');
 
-  // 1. Check if profiles table exists (by trying to select from it)
-  const { error: tableError } = await supabase.from('profiles').select('role').limit(1);
-
-  if (tableError && tableError.message.includes('relation "public.profiles" does not exist')) {
-    console.error('❌ ERROR: Table "profiles" does not exist in Supabase.');
-    console.log('👉 ACTION REQUIRED: Run this SQL in your Supabase SQL Editor:');
-    console.log(`
-      CREATE TABLE public.profiles (
-        id uuid REFERENCES auth.users NOT NULL PRIMARY KEY,
-        role text CHECK (role IN ('admin', 'manager', 'analyst')) DEFAULT 'analyst',
-        email text
-      );
-      ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-      CREATE POLICY "Users can view their own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
-    `);
-    return;
-  }
-
-  // 2. Map existing users to admin role (for development)
-  console.log('Fetching users...');
-  const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+  // 1. Correctly fetch users from the admin API
+  const { data, error: usersError } = await supabase.auth.admin.listUsers();
 
   if (usersError) {
-    console.error('Error listing users:', usersError.message);
+    console.error('❌ CONNECTION FAILED:', usersError.message);
     return;
   }
 
-  console.log(`Found ${users?.length} users. Assigning roles...`);
+  const userList = data?.users || [];
+  console.log(`✅ Connected! Found ${userList.length} users.`);
 
-  for (const user of users) {
+  if (userList.length === 0) {
+    console.log('⚠️ No users found in your Supabase project.');
+    return;
+  }
+
+  // 2. Sync profiles
+  for (const user of userList) {
+    console.log(`Syncing profile for: ${user.email}...`);
+    
     const { error: upsertError } = await supabase
       .from('profiles')
       .upsert({ 
         id: user.id, 
-        role: 'admin', // Default to admin for existing users during setup
+        role: 'admin',
         email: user.email 
       }, { onConflict: 'id' });
 
     if (upsertError) {
-      console.error(`Failed to setup profile for ${user.email}:`, upsertError.message);
+      console.error(`❌ FAILED for ${user.email}:`, upsertError.message);
     } else {
-      console.log(`✅ Profile synchronized for: ${user.email} (Role: admin)`);
+      console.log(`✅ SUCCESS: ${user.email} is now an admin.`);
     }
   }
 

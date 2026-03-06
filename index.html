@@ -48,7 +48,9 @@
                 <i class="fas fa-chevron-left"></i>
             </button>
             <div class="sidebar-inner">
-                <h2>PROMETHEUS</h2>
+                <h2>PROMETHEUS <span style="font-size: 0.5rem; color: #10b981; vertical-align: middle;">[v2.2]</span></h2>
+                
+                <div class="nav-section-label" style="font-size: 0.65rem; color: #64748b; padding: 0 24px; margin: 20px 0 10px 0; text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Analyst Portal</div>
                 <ul id="nav-links">
                     <li><a href="#" data-page="executive" class="active"><i class="fas fa-chart-line"></i>Executive <span class="nav-badge" id="badge-executive"></span></a></li>
                     <li><a href="#" data-page="sales"><i class="fas fa-shopping-cart"></i>Sales <span class="nav-badge" id="badge-sales"></span></a></li>
@@ -57,6 +59,10 @@
                     <li><a href="#" data-page="operations"><i class="fas fa-cogs"></i>Operations <span class="nav-badge" id="badge-operations"></span></a></li>
                     <li><a href="#" data-page="support"><i class="fas fa-headset"></i>Support <span class="nav-badge" id="badge-support"></span></a></li>
                     <li><a href="#" data-page="payroll"><i class="fas fa-money-check-alt"></i>Payroll <span class="nav-badge" id="badge-payroll"></span></a></li>
+                </ul>
+
+                <div class="nav-section-label" style="font-size: 0.65rem; color: #fbbf24; padding: 0 24px; margin: 20px 0 10px 0; text-transform: uppercase; font-weight: 800; letter-spacing: 0.1em;">Programmer Terminal</div>
+                <ul id="programmer-links">
                     <li><a href="#" data-page="manage" style="color: #fbbf24;"><i class="fas fa-edit"></i>Manage Data</a></li>
                 </ul>
 
@@ -153,10 +159,21 @@
         }
     </style>
 
+    <script>
+        // NUCLEAR CACHE RESET - Run once to clear Opera GX/Chrome stale workers
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => {
+                for(let reg of regs) {
+                    reg.unregister().then(() => console.log("Stale Service Worker Nuked"));
+                }
+            });
+        }
+        console.log("PROMETHEUS CORE: [v2.3] ACTIVE");
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
     <script>
-        const SUPABASE_URL = "https://vjbmlvnajpgpdjkkvjls.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_fDvCpQk4buLI9YwG42JwQQ_45g_SKtN";
+        const SUPABASE_URL = "https://mpkgbfqhgdlipsxorgxe.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_DIYDeBbCPIb7C5cVsA2uvg_cLrSxzBm";
         
         let supabase;
         let currentUser = null;
@@ -511,17 +528,6 @@
                     console.log("Authenticated User Role:", userRole);
                 }
 
-                // --- Hide Manage Data link if not admin ---
-                const manageLink = document.querySelector('a[data-page="manage"]');
-                if (manageLink) {
-                    if (userRole === 'admin') {
-                        manageLink.style.display = 'flex';
-                    } else {
-                        manageLink.style.display = 'none';
-                        console.log("Management link hidden (Analyst Role Detected)");
-                    }
-                }
-
                 // Initialize Chat
                 loadMessages();
                 supabase
@@ -589,7 +595,7 @@
         });
 
         // Update Sidebar and iframe Logic
-        const links = document.querySelectorAll('#nav-links a');
+        const links = document.querySelectorAll('.sidebar a[data-page]');
         const contentFrame = document.getElementById('content-frame');
         const sidebar = document.querySelector('.sidebar');
         const mobileToggle = document.getElementById('mobile-menu-toggle');

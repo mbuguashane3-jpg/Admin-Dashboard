@@ -3,6 +3,7 @@
   "scripts": {
     "build": "npm install --prefix backend && cd backend && npm run build",
     "migrate": "cd backend && npm run migrate",
+    "setup-roles": "cd backend && npm run setup-roles",
     "dev": "npm run dev --prefix backend",
     "start": "cd backend && node dist/index.js"
   },
