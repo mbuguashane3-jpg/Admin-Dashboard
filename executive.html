@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Dashboard | Prometheus Core</title>
+    <title>Executive Dashboard | Prometheus Command</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,7 +14,7 @@
         :root { --p-glow: rgba(16, 185, 129, 0.2); }
         .charts-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 24px; margin-bottom: 32px; }
         .chart-container { position: relative; height: 280px; width: 100%; }
-        .page-container { background: transparent !important; padding: 40px; position: relative; overflow-x: hidden; min-height: 100vh; }
+        .page-container { background: transparent !important; padding: 40px; position: relative; min-height: 100vh; }
         
         /* Holographic Scanline Overlay */
         .page-container::after {
@@ -23,10 +23,8 @@
             z-index: 9999; background-size: 100% 4px, 3px 100%; pointer-events: none; opacity: 0.3;
         }
 
-        /* Ambient Neural Particles */
         #neural-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; opacity: 0.4; }
 
-        /* KPI Card 3D Kinetic Effects */
         .stats-grid { perspective: 1500px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; }
         .stats-grid .card {
             position: relative; overflow: hidden; transform-style: preserve-3d;
@@ -39,14 +37,12 @@
         }
         .card:hover .card-reflection { opacity: 1; }
 
-        /* Micro-Insights */
         .micro-insight {
             position: absolute; top: 15px; right: 40px; font-size: 0.5rem; font-weight: 900;
             color: var(--primary-color); opacity: 0; transform: translateX(10px); transition: 0.3s; z-index: 10;
         }
         .card:hover .micro-insight { opacity: 1; transform: translateX(0); }
 
-        /* Heartbeat */
         .kpi-heartbeat {
             position: absolute; top: 12px; right: 12px; width: 6px; height: 6px;
             background: var(--primary-color); border-radius: 50%; box-shadow: 0 0 8px var(--primary-color);
@@ -54,89 +50,102 @@
         }
         @keyframes heartbeat { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(2.5); opacity: 0; } 100% { transform: scale(1); opacity: 0; } }
 
-        /* Sparkline */
         .sparkline-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 30px; opacity: 0.3; pointer-events: none; }
 
-        /* Product Table Expansion */
-        .product-row { transition: all 0.3s; cursor: pointer; border-left: 3px solid transparent; }
-        .product-row:hover { background: rgba(16, 185, 129, 0.05); border-left-color: var(--primary-color); }
-        .expansion-slot { display: none; background: rgba(0,0,0,0.02); }
-        [data-theme="dark"] .expansion-slot { background: rgba(255,255,255,0.02); }
-        .product-row.active + .expansion-slot { display: table-row; }
+        .card-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98); z-index: 50; padding: 24px;
+            display: none; flex-direction: column; justify-content: center;
+            backdrop-filter: blur(10px); animation: fadeIn 0.3s forwards;
+        }
+        
+        .user-heatmap {
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 12px;
+            background: rgba(16, 185, 129, 0.1); backdrop-filter: blur(5px);
+            transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 10; display: flex; justify-content: space-around;
+        }
+        .card:hover .user-heatmap { transform: translateY(0); }
+        .heatmap-node { text-align: center; }
+        .heatmap-label { font-size: 0.5rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+        .heatmap-val { font-size: 0.7rem; font-weight: 900; color: var(--primary-color); }
 
-        /* Radar Aura */
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        th { color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; text-align: left; padding: 8px; }
+        td { padding: 12px 8px; background: rgba(255,255,255,0.02); position: relative; }
+        td:first-child { border-radius: 8px 0 0 8px; }
+        td:last-child { border-radius: 0 8px 8px 0; }
+
+        @keyframes pulse-emerald { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        .pulse-health { animation: pulse-emerald 2s infinite; }
+
+        .row-scan-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to right, transparent, var(--primary-color), transparent);
+            opacity: 0; pointer-events: none; z-index: 10;
+        }
+        .scanning .row-scan-overlay { animation: table-scan 1.5s ease-in-out forwards; opacity: 0.2; }
+        @keyframes table-scan { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+        .unit-eco-box {
+            display: flex; gap: 20px; padding: 15px; background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px; border: 1px solid var(--primary-color); margin: 10px 0;
+            animation: slideIn 0.4s ease-out;
+        }
+        .eco-metric { flex: 1; }
+        .eco-label { font-size: 0.5rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; }
+        .eco-val { font-size: 0.8rem; font-weight: 800; color: var(--primary-color); }
+
         .radar-aura {
             position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%);
-            width: 220px; height: 220px; background: radial-gradient(circle, var(--p-glow) 0%, transparent 70%);
-            border-radius: 50%; z-index: 0; animation: aura-pulse 4s infinite;
+            width: 240px; height: 220px; background: radial-gradient(circle, var(--p-glow) 0%, transparent 70%);
+            border-radius: 50%; z-index: 0; animation: aura-pulse 4s infinite ease-in-out;
+            transition: background 0.5s ease;
         }
-        @keyframes aura-pulse { 0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.3); } }
+        @keyframes aura-pulse { 0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.25); } }
+
+        .radar-volumetric-sweep {
+            position: absolute; top: 55%; left: 50%; width: 200px; height: 200px;
+            background: conic-gradient(from 0deg, var(--primary-color) 0deg, transparent 60deg);
+            transform: translate(-50%, -50%); border-radius: 50%;
+            z-index: 5; pointer-events: none; opacity: 0.15;
+            animation: radar-sweep 4s linear infinite; filter: blur(10px);
+        }
+        @keyframes radar-sweep { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        #radar-micro-insight {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.15); border: 1px solid var(--primary-color);
+            padding: 6px 12px; border-radius: 20px; font-size: 0.55rem; font-weight: 800;
+            color: #fff; display: none; backdrop-filter: blur(5px); z-index: 100;
+            animation: slideUp 0.3s forwards;
+        }
+
+        .toggle-btn {
+            background: rgba(255,255,255,0.05); border: none; padding: 4px 8px; border-radius: 6px;
+            font-size: 0.55rem; font-weight: 800; cursor: pointer; color: #94a3b8; transition: all 0.3s;
+        }
+        .toggle-btn.active { background: var(--primary-color); color: white; box-shadow: 0 0 10px var(--primary-color); }
+
+        .simulator-slider {
+            -webkit-appearance: none; width: 100%; height: 6px; background: rgba(255,255,255,0.1);
+            border-radius: 10px; outline: none; margin: 10px 0;
+        }
+        .simulator-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px; background: var(--primary-color);
+            border-radius: 50%; cursor: pointer; border: 2px solid white;
+        }
 
         /* War Room Blur */
         body.war-room-active::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); z-index: 9998;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 9998;
         }
-        
         #signals-section.focus-mode {
             position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) scale(1.1) !important;
             width: 80% !important; max-width: 900px !important; height: 70vh !important; z-index: 10000 !important;
             box-shadow: 0 0 100px rgba(0,0,0,0.5) !important; border: 1px solid var(--primary-color) !important;
-            background: var(--card-bg) !important;
-        }
-        
-        #signals-section.focus-mode #signals-list { overflow-y: auto; flex-grow: 1; padding-right: 10px; }
-
-        /* Decoding/Typing Cursor */
-        .decoding { font-family: monospace; }
-        .typing-cursor::after { content: '|'; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-
-        /* Strategy Toggles */
-        .toggle-btn {
-            background: rgba(0,0,0,0.05); border: none; padding: 4px 8px; border-radius: 6px;
-            font-size: 0.55rem; font-weight: 800; cursor: pointer; color: var(--text-muted); transition: all 0.3s;
-        }
-        [data-theme="dark"] .toggle-btn { background: rgba(255,255,255,0.05); }
-        .toggle-btn.active { background: var(--primary-color); color: white; box-shadow: 0 0 10px var(--primary-color); }
-
-        .btn-mini { padding: 4px 8px; font-size: 0.55rem; font-weight: 800; border-radius: 4px; border: none; cursor: pointer; transition: 0.2s; }
-        .btn-mini-primary { background: var(--primary-color); color: white; }
-
-        .signal-item {
-            padding: 18px; border-radius: 15px; margin-bottom: 12px;
-            background: rgba(15, 23, 42, 0.03); border: 1px solid rgba(0,0,0,0.05);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; position: relative; overflow: hidden;
-        }
-        [data-theme="dark"] .signal-item { background: rgba(255, 255, 255, 0.02); border-color: rgba(255,255,255,0.05); }
-        .signal-item:hover { border-color: var(--primary-color); transform: translateY(-3px); }
-
-        .impact-badge { font-size: 0.6rem; font-weight: 900; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; }
-        .impact-high { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        .impact-win { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-
-        .confidence-ring {
-            width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1);
-            display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: 800;
-        }
-        .tactical-playbook { margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.05); display: none; }
-        .signal-item.expanded .tactical-playbook { display: block; }
-
-        .playbook-step {
-            display: flex; align-items: center; gap: 10px; font-size: 0.65rem; margin-bottom: 8px;
-            padding: 8px; background: rgba(0,0,0,0.02); border-radius: 8px; font-weight: 500;
-        }
-        [data-theme="dark"] .playbook-step { background: rgba(255,255,255,0.03); }
-
-        /* Simulator Sliders */
-        .simulator-slider {
-            -webkit-appearance: none; width: 100%; height: 6px; background: rgba(0,0,0,0.05);
-            border-radius: 10px; outline: none; margin: 10px 0;
-        }
-        [data-theme="dark"] .simulator-slider { background: rgba(255,255,255,0.1); }
-        .simulator-slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 16px; height: 16px; background: var(--primary-color);
-            border-radius: 50%; cursor: pointer; border: 2px solid white;
+            background: var(--card-bg) !important; overflow-y: auto;
         }
     </style>
 </head>
@@ -150,46 +159,63 @@
     <header class="header-section animate-fade-in stagger-1">
         <div style="display: flex; justify-content: space-between; align-items: flex-end;">
             <div>
-                <h1 style="font-weight: 800; letter-spacing: -0.02em;">Prometheus <span style="color: var(--primary-color);">Executive</span></h1>
-                <p style="font-size: 0.8rem; color: var(--text-muted);">Neural Surveillance & Strategic Simulation Interface</p>
+                <h1 style="font-weight: 800; letter-spacing: -0.02em;">Nairobi <span style="color: var(--primary-color);">Executive Hub</span></h1>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Regional Intelligence Command Console</p>
             </div>
-            <div id="system-status" style="font-size: 0.6rem; font-weight: 800; color: var(--primary-color); margin-bottom: 5px;">
-                <i class="fas fa-circle" style="font-size: 0.4rem; vertical-align: middle; margin-right: 5px;"></i> SYSTEM NOMINAL: 99.99%
+            <div id="system-status" style="font-size: 0.6rem; font-weight: 800; color: var(--primary-color);">
+                <i class="fas fa-circle" style="font-size: 0.4rem; vertical-align: middle; margin-right: 5px;"></i> HUB NOMINAL: 99.99%
             </div>
         </div>
     </header>
 
     <section class="stats-grid">
-        <div class="card north-star-card animate-fade-in stagger-2">
+        <div class="card animate-fade-in stagger-2" id="card-market" onclick="toggleOverlay('market-overlay')">
             <div class="card-reflection"></div><div class="kpi-heartbeat"></div>
-            <div class="card-title">ECOSYSTEM MARKET VALUE <i class="fas fa-star"></i></div>
-            <div class="card-value odometer" data-value="842.5" data-prefix="$" data-suffix="M">$0M</div>
-            <div class="micro-insight">Neural Goal: $1B</div>
-            <p style="font-size:0.7rem; opacity:0.7;">Strategic Valuation</p>
+            <div class="card-title">REGIONAL MARKET VALUE <i class="fas fa-star"></i></div>
+            <div class="card-value" id="val-market">KSh 0B</div>
+            <p style="font-size:0.7rem; opacity:0.7; color:var(--text-muted);">NSE Strategic Valuation</p>
             <div class="sparkline-container" data-color="#fff"></div>
+            <div id="market-overlay" class="card-overlay">
+                <div style="font-size:0.6rem; font-weight:900; color:var(--primary-color); margin-bottom:12px;">NSE SECTOR CONTRIBUTION</div>
+                <div style="font-size:0.75rem; margin-bottom:8px; display:flex; justify-content:space-between; color:white;"><span>Safaricom/Telcom</span> <b>42%</b></div>
+                <div style="font-size:0.75rem; margin-bottom:8px; display:flex; justify-content:space-between; color:white;"><span>Banking</span> <b>35%</b></div>
+                <div style="font-size:0.75rem; margin-bottom:12px; display:flex; justify-content:space-between; color:white;"><span>Energy/Mfg</span> <b>23%</b></div>
+                <button class="btn-mini btn-mini-primary" style="align-self:flex-end;">CLOSE</button>
+            </div>
         </div>
+
         <div class="card animate-fade-in stagger-3">
             <div class="card-reflection"></div><div class="kpi-heartbeat"></div>
             <div class="card-title">ANNUAL RECURRING REVENUE <i class="fas fa-dollar-sign"></i></div>
-            <div id="arr-display" class="card-value odometer" data-value="14.2" data-prefix="$" data-suffix="M">$0M</div>
-            <div class="micro-insight">Target: $15M</div>
-            <div class="card-trend trend-up"><i class="fas fa-arrow-up"></i> 12.5% increase</div>
+            <div id="arr-main-view">
+                <div id="val-arr" class="card-value">KSh 0B</div>
+                <div class="card-trend trend-up" style="color:#10b981; font-size:0.7rem;"><i class="fas fa-arrow-up"></i> 14.2% increase</div>
+            </div>
+            <div id="arr-split-view" style="display:none;">
+                <div style="margin-top:10px;"><div style="font-size:0.6rem; color:var(--text-muted); font-weight:800;">M-PESA B2B</div><div id="val-mpesa" style="font-size:1.4rem; font-weight:800; color:var(--primary-color);">KSh 0.9B</div></div>
+                <div style="margin-top:5px;"><div style="font-size:0.6rem; color:var(--text-muted); font-weight:800;">BANK SETTLEMENT</div><div id="val-bank" style="font-size:1.4rem; font-weight:800; color:#3b82f6;">KSh 0.5B</div></div>
+            </div>
+            <button onclick="toggleArrView(event)" style="position:absolute; bottom:15px; right:15px; background:rgba(255,255,255,0.05); border:none; color:var(--primary-color); font-size:0.5rem; font-weight:800; cursor:pointer; padding:4px 8px; border-radius:4px;">TOGGLE SPLIT</button>
             <div class="sparkline-container" data-color="#10b981"></div>
         </div>
+
         <div class="card animate-fade-in stagger-4">
-            <div class="card-reflection"></div><div class="kpi-heartbeat" style="animation-delay: 0.5s;"></div>
+            <div class="card-reflection"></div><div class="kpi-heartbeat"></div>
             <div class="card-title">MOM GROWTH VELOCITY <i class="fas fa-chart-line"></i></div>
-            <div class="card-value odometer" data-value="18.4" data-suffix="%">0%</div>
-            <div class="micro-insight">Elite Tier</div>
-            <div class="velocity-container"><div class="velocity-particle"></div></div>
+            <div id="val-growth" class="card-value">0%</div>
+            <div class="micro-insight" id="growth-pulse" style="opacity:1; top:unset; bottom:15px; right:15px; font-size:0.55rem; color:#fff; background:var(--primary-color); padding:2px 6px; border-radius:4px;">HUB: NAIROBI (+22%)</div>
             <div class="sparkline-container" data-color="#3b82f6"></div>
         </div>
+
         <div class="card animate-fade-in stagger-5">
-            <div class="card-reflection"></div><div class="kpi-heartbeat" style="animation-delay: 1s;"></div>
+            <div class="card-reflection"></div><div class="kpi-heartbeat"></div>
             <div class="card-title">DAILY ACTIVE USERS <i class="fas fa-users"></i></div>
-            <div class="card-value odometer" data-value="42.5" data-suffix="k">0k</div>
-            <div class="micro-insight">94% Retention</div>
-            <div class="card-trend trend-up"><i class="fas fa-arrow-up"></i> 5% increase</div>
+            <div id="val-dau" class="card-value">0k</div>
+            <div class="user-heatmap">
+                <div class="heatmap-node"><div class="heatmap-label">Westlands</div><div class="heatmap-val">18k</div></div>
+                <div class="heatmap-node"><div class="heatmap-label">CBD</div><div class="heatmap-val">12k</div></div>
+                <div class="heatmap-node"><div class="heatmap-label">Upperhill</div><div class="heatmap-val">8k</div></div>
+            </div>
             <div class="sparkline-container" data-color="#8b5cf6"></div>
         </div>
     </section>
@@ -197,311 +223,281 @@
     <div class="charts-row">
         <div class="card animate-fade-in stagger-6">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div class="card-title" style="margin-bottom: 0;">REVENUE PERFORMANCE <i class="fas fa-chart-area"></i></div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="card-title" style="margin-bottom: 0;">REVENUE TREND</div>
+                    <div class="strategy-toggles" style="display: flex; background: rgba(255,255,255,0.05); border-radius: 6px; padding: 2px;">
+                        <button class="toggle-btn active" id="btn-ksh" onclick="toggleCurrency('KSh')">KSh</button>
+                        <button class="toggle-btn" id="btn-usd" onclick="toggleCurrency('USD')">USD</button>
+                    </div>
+                </div>
                 <button class="toggle-btn" id="toggle-compare">Compare PY</button>
             </div>
             <div class="chart-container"><canvas id="revenueChart"></canvas></div>
-            <div id="revenue-insight" style="margin-top: 15px; font-size: 0.6rem; color: var(--text-muted); font-weight: 700;">
-                <i class="fas fa-info-circle"></i> Click data points to filter products.
-            </div>
         </div>
         
         <div class="card animate-fade-in stagger-6" style="position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div class="card-title" style="margin-bottom: 0;">BUSINESS HEALTH <i class="fas fa-bullseye"></i></div>
-                <div class="strategy-toggles" style="display: flex; gap: 5px;">
-                    <button class="toggle-btn active" data-strategy="market">MKT</button>
-                    <button class="toggle-btn" data-strategy="ops">OPS</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; position: relative; z-index: 10;">
+                <div>
+                    <div class="card-title" style="margin-bottom: 0;">HEALTH RADAR</div>
+                    <div id="radar-hub-label" style="font-size: 0.5rem; font-weight: 800; color: var(--primary-color);">NAIROBI CENTRAL</div>
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <select id="hub-selector" onchange="changeHub(this.value)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.55rem; font-weight: 800; outline: none;">
+                        <option value="nairobi">NAIROBI</option><option value="mombasa">MOMBASA</option><option value="kisumu">KISUMU</option>
+                    </select>
+                    <div class="strategy-toggles" style="display: flex; gap: 2px;">
+                        <button class="toggle-btn active" data-strategy="market">MKT</button>
+                        <button class="toggle-btn" data-strategy="ops">OPS</button>
+                    </div>
                 </div>
             </div>
-            <div class="radar-aura"></div>
+            <div id="radar-aura" class="radar-aura"></div>
+            <div class="radar-volumetric-sweep"></div>
             <div class="chart-container"><canvas id="radarChart"></canvas></div>
-            <div id="radar-diagnosis" style="margin-top: 15px; font-size: 0.6rem; color: var(--primary-color); font-weight: 800; text-align: center; height: 15px;">Hover axis for tactical diagnosis</div>
+            <div id="radar-diagnosis" style="margin-top: 15px; font-size: 0.6rem; color: var(--primary-color); font-weight: 800; text-align: center; height: 15px;">DEEP SECTOR SCAN: STANDBY</div>
+            <div id="radar-micro-insight"></div>
         </div>
 
         <div class="card animate-fade-in stagger-6">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div class="card-title" style="margin-bottom: 0;">DECISION SIMULATOR <i class="fas fa-magic"></i></div>
-                <button id="reset-sim" class="btn-mini" style="background:none; color:var(--text-muted);"><i class="fas fa-undo"></i></button>
-            </div>
-            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <button class="preset-btn toggle-btn" data-preset="blitz">BLITZ</button>
-                <button class="preset-btn toggle-btn" data-preset="efficient">EFF</button>
+            <div class="card-title">TACTICAL SIMULATOR <i class="fas fa-microchip"></i></div>
+            <div style="margin-bottom: 15px;">
+                <label style="font-size:0.55rem; font-weight:900; color:var(--text-muted);">ENVIRONMENT SCENARIO</label>
+                <select id="scenario-selector" onchange="updateSim()" style="width:100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.6rem; font-weight: 800; border-radius: 6px; padding: 5px; outline: none; cursor: pointer;">
+                    <option value="stable">STABLE</option><option value="recession">GLOBAL RECESSION</option><option value="boom">TECH BOOM</option><option value="mpesa">M-PESA RALLY</option>
+                </select>
             </div>
             <div class="simulator-controls">
-                <div>
-                    <label style="font-size:0.55rem; font-weight:900;">RETENTION <span id="retention-label" style="float:right;">+0%</span></label>
-                    <input type="range" id="retention-slider" min="0" max="20" value="0" class="simulator-slider">
-                </div>
-                <div>
-                    <label style="font-size:0.55rem; font-weight:900;">ACQUISITION <span id="acquisition-label" style="float:right;">+0%</span></label>
-                    <input type="range" id="acquisition-slider" min="0" max="50" value="0" class="simulator-slider">
-                </div>
-                <div>
-                    <label style="font-size:0.55rem; font-weight:900;">CHURN <span id="churn-label" style="float:right;">-0%</span></label>
-                    <input type="range" id="churn-slider" min="0" max="10" value="0" class="simulator-slider">
-                </div>
+                <div><label style="font-size:0.55rem; font-weight:900; color:var(--text-muted);">RETENTION <span id="retention-label" style="float:right;">+0%</span></label>
+                <input type="range" id="retention-slider" min="0" max="20" value="0" class="simulator-slider"></div>
+                <div><label style="font-size:0.55rem; font-weight:900; color:var(--text-muted);">ACQUISITION <span id="acquisition-label" style="float:right;">+0%</span></label>
+                <input type="range" id="acquisition-slider" min="0" max="50" value="0" class="simulator-slider"></div>
             </div>
-            <div style="margin-top:10px; padding:10px; background:rgba(16,185,129,0.05); border-radius:8px; border-left:3px solid var(--primary-color);">
-                <div id="sim-result" style="font-size: 1.1rem; font-weight: 800;">+$0.0M</div>
-                <div id="sim-percentage" style="font-size: 0.55rem; font-weight: 700; color: var(--primary-color);">+0% Improvement</div>
+            <div style="margin-top: 15px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.55rem; font-weight:900; margin-bottom:5px;"><span style="color:var(--text-muted);">EXECUTION RISK</span><span id="risk-val" style="color:#10b981;">LOW</span></div>
+                <div style="height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden;"><div id="risk-bar" style="width:20%; height:100%; background:#10b981; transition:0.5s;"></div></div>
             </div>
+            <div style="margin-top:15px; padding:12px; background:rgba(16,185,129,0.05); border-radius:8px; border-left:3px solid var(--primary-color);">
+                <div id="sim-result" style="font-size: 1.2rem; font-weight: 800; color:var(--text-main);">+KSh 0.00B</div>
+            </div>
+            <div id="playbook-steps" style="font-size:0.55rem; color:var(--text-muted); line-height:1.6; margin-top:10px;">• Calibrate baseline for stability...</div>
         </div>
     </div>
 
     <div class="content-grid">
         <section class="card animate-fade-in stagger-6">
-            <div class="card-title">SOFTWARE PRODUCTS <span class="badge badge-primary" id="product-count">7 Active</span></div>
-            <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 15px;">Click rows for Unit Economics.</p>
-            <table>
-                <thead><tr><th>Name</th><th>Category</th><th>Health</th><th>Traction</th></tr></thead>
-                <tbody id="product-table-body"></tbody>
-            </table>
+            <div class="card-title">KENYAN PRODUCT SUITE <span class="badge badge-primary">4 Active</span></div>
+            <table><thead><tr><th>Name</th><th>Category</th><th>Health</th><th>Traction</th></tr></thead>
+            <tbody id="product-table-body"></tbody></table>
         </section>
-
-        <aside class="card animate-fade-in stagger-6" id="signals-section" style="position: relative; overflow: hidden;">
-            <div id="neural-scanner" style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--primary-color), transparent); opacity: 0.3; pointer-events: none; animation: scan 4s linear infinite;"></div>
+        <aside class="card animate-fade-in stagger-6" id="signals-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <div class="card-title" style="margin-bottom: 0;">STRATEGIC INTELLIGENCE <span id="intelligence-status" style="font-size: 0.5rem; color: var(--primary-color); border: 1px solid var(--primary-color); padding: 2px 5px; border-radius: 4px; margin-left: 8px;">LIVE SCANNING</span></div>
-                <button class="btn-mini" id="focus-mode-btn" style="background:none; color:var(--text-muted);"><i class="fas fa-expand"></i></button>
+                <div class="card-title" style="margin-bottom: 0;">STRATEGIC SIGNALS <i class="fas fa-bolt"></i></div>
+                <div style="display: flex; gap: 5px;">
+                    <select id="signal-filter" onchange="window.handleSignalFilter(this.value)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.5rem; font-weight: 800; border-radius: 4px;">
+                        <option value="all">ALL</option><option value="rocket">GROWTH</option><option value="warning">RISK</option>
+                    </select>
+                    <button class="btn-mini btn-mini-primary" id="focus-mode-btn">FOCUS</button>
+                </div>
             </div>
             <div id="signals-list"></div>
         </aside>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
     <script>
-        const SUPABASE_URL = "https://mpkgbfqhgdlipsxorgxe.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_DIYDeBbCPIb7C5cVsA2uvg_cLrSxzBm";
-        let supabase;
-        try { supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch (e) {}
-
+        // --- GLOBAL CONSTANTS & DATA ---
+        const EX_RATE = 135;
         const defaultData = {
-            kpis: { marketValue: { value: 842.5 }, arr: { value: 14.2 }, momGrowth: { value: 18.4 }, dau: { value: 42.5 } },
+            kpis: { marketValue: { value: 84.5 }, arr: { value: 1.4 }, momGrowth: { value: 18.4 }, dau: { value: 42.5 } },
             products: [
-                { name: 'Nexus ERP', category: 'Enterprise', status: 'Healthy', traction: 'High', ltv: '$12.4k', cac: '$2.1k' },
-                { name: 'CloudSync Core', category: 'Infrastructure', status: 'Healthy', traction: 'Stable', ltv: '$8.2k', cac: '$1.4k' },
-                { name: 'DataGuard Pro', category: 'Security', status: 'Monitoring', traction: 'Rising', ltv: '$15.1k', cac: '$4.2k' },
-                { name: 'Streamline Flow', category: 'Automation', status: 'Healthy', traction: 'High', ltv: '$6.8k', cac: '$0.9k' },
-                { name: 'Omni Ledger', category: 'Finance', status: 'Healthy', traction: 'Leader', ltv: '$22.0k', cac: '$3.5k' }
+                { name: 'M-Pesa B2B Sync', category: 'Fintech', status: 'Healthy', traction: 'High', ltv: 'KSh 1.2M', cac: 'KSh 210k' },
+                { name: 'County Ledger', category: 'GovTech', status: 'Healthy', traction: 'Stable', ltv: 'KSh 8.2M', cac: 'KSh 1.4M' }
             ],
             signals: [
-                { type: 'rocket', title: 'High Retention: SMB', description: 'SMB retention hit 94%. Growth opportunity identified.', playbook: ['Scale Ad Spend by 15%', 'Execute Referral Program'] },
-                { type: 'warning', title: 'Latency Surge: Infrastructure', description: 'Cloud costs rising for Nexus ERP.', playbook: ['Trigger Node Auto-Scaling', 'Optimize SQL Query Pool'] }
+                { type: 'rocket', title: 'High Retention: Nairobi SMEs', description: 'Nairobi Westlands SMEs hit 94% retention.', playbook: ['Scale Sales in Upperhill', 'Execute Referral Program'] },
+                { type: 'warning', title: 'M-Pesa API Latency', description: 'Transaction latency rising in Kisumu Hub.', playbook: ['Trigger Node Auto-Scaling', 'Optimize Regional SQL Pool'] }
             ],
-            revenueChart: { labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul'], data: [8.2, 9.4, 10.1, 11.5, 12.8, 13.5, 14.2] }
+            revenueChart: { 
+                labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul'], data: [0.8, 0.9, 1.1, 1.2, 1.3, 1.35, 1.4],
+                forecast: [0.85, 0.95, 1.15, 1.25, 1.4, 1.5, 1.6], pyData: [0.6, 0.75, 0.85, 0.9, 1.0, 1.1, 1.15],
+                regionalBreakdown: { "Jan": { "Nairobi": 60, "Mombasa": 20, "Other": 20 }, "Feb": { "Nairobi": 58, "Mombasa": 22, "Other": 20 }, "Mar": { "Nairobi": 62, "Mombasa": 18, "Other": 20 }, "Apr": { "Nairobi": 65, "Mombasa": 15, "Other": 20 }, "May": { "Nairobi": 60, "Mombasa": 25, "Other": 15 }, "Jun": { "Nairobi": 55, "Mombasa": 30, "Other": 15 }, "Jul": { "Nairobi": 58, "Mombasa": 28, "Other": 14 } },
+                insights: { "Jan": "New Year Spike", "Feb": "Retail Volume Peak", "Mar": "M-Pesa Surge", "Apr": "Easter Pulse", "May": "Procurement Rally", "Jun": "Audit Peak", "Jul": "Tourism Recovery" }
+            }
         };
 
-        let globalProductData = [];
-        let myRevChart, myRadarChart;
+        const hubData = { nairobi: { market: [85, 92, 78, 15, 88], ops: [99, 82, 70, 88, 94] }, mombasa: { market: [70, 80, 65, 25, 75], ops: [92, 75, 85, 80, 82] }, kisumu: { market: [60, 75, 55, 30, 65], ops: [88, 70, 95, 75, 78] } };
+        const radarInsights = { 'County Reach': "Expanding into Rift Valley.", 'M-Pesa Synergy': "Integration at 100%.", 'NSE Velocity': "Tracking high.", 'Retention': "Nairobi leads at 94%.", 'Market Presence': "Strategic dominance.", 'Uptime': "Nodes at 99.99%.", 'API Latency': "Response <40ms.", 'KRA Compliance': "Tax sync active.", 'Hub Health': "Stable at peak.", 'Scale': "Verified for Q3." };
 
-        // Theme Sync
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            if(myRevChart || myRadarChart) fetchData(); // Re-render charts for color sync
-        }
-        window.addEventListener('message', (e) => { if(e.data.type === 'THEME_UPDATE') applyTheme(e.data.theme); });
-        const savedTheme = localStorage.getItem('theme');
-        if(savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+        // --- GLOBAL STATE ---
+        let lastFetchedData = defaultData; let myRevChart, myRadarChart;
+        let isComparePY = false; let currentStrategy = 'market'; let currentCurrency = 'KSh'; let currentHub = 'nairobi';
+        let sliderEls = {};
 
+        // --- CORE FUNCTIONS ---
+        window.toggleOverlay = function(id) { const el = document.getElementById(id); if(el) el.style.display = el.style.display === 'flex' ? 'none' : 'flex'; };
+        window.toggleArrView = function(e) { e.stopPropagation(); const main = document.getElementById('arr-main-view'); const split = document.getElementById('arr-split-view'); if (main.style.display === 'none') { main.style.display = 'block'; split.style.display = 'none'; } else { main.style.display = 'none'; split.style.display = 'block'; } };
+        window.toggleCurrency = function(curr) { currentCurrency = curr; document.getElementById('btn-ksh').classList.toggle('active', curr === 'KSh'); document.getElementById('btn-usd').classList.toggle('active', curr === 'USD'); updateDashboard(lastFetchedData); };
+        window.changeHub = function(hub) { currentHub = hub; document.getElementById('radar-hub-label').innerText = hub.toUpperCase() + ' CENTRAL'; updateDashboard(lastFetchedData); };
+        window.handleSignalFilter = function(val) { renderSignals(lastFetchedData.signals); };
+
+        window.deployStrategy = function(title, event) {
+            event.stopPropagation(); console.log("DEPLOYING:", title);
+            document.body.style.boxShadow = 'inset 0 0 100px rgba(16, 185, 129, 0.3)';
+            const status = document.getElementById('radar-diagnosis');
+            if(status) { status.innerText = `STRATEGY DEPLOYED: ${title.toUpperCase()}`; status.style.color = '#10b981'; }
+            if (window.parent && window.parent.showToast) window.parent.showToast(`Neural Link: Strategic Deployment for ${title} active.`, "bolt", "#10b981");
+            setTimeout(() => { document.body.style.boxShadow = 'none'; if(status) status.innerText = 'DEEP SECTOR SCAN: STANDBY'; }, 3000);
+        };
+
+        window.expandSignal = function(el, idx) {
+            if (!el.classList.contains('expanded')) {
+                el.classList.add('expanded');
+                el.querySelectorAll('.playbook-step').forEach((s, i) => { 
+                    setTimeout(() => { s.style.opacity = '1'; const target = s.querySelector('.type-target'); typeWriter(target, target.dataset.text); }, i * 400); 
+                });
+            } else el.classList.remove('expanded');
+        };
+
+        function typeWriter(el, text) { el.innerHTML = ''; let i = 0; const timer = setInterval(() => { if (i < text.length) el.innerHTML += text.charAt(i++); else clearInterval(timer); }, 30); }
+
+        window.triggerAudit = function(id, event) {
+            event.stopPropagation(); const row = document.getElementById(`row-${id}`); if(!row) return;
+            row.classList.add('scanning'); const productName = row.querySelector('strong').innerText;
+            const status = document.getElementById('radar-diagnosis'); if(status) { status.innerText = `AUDIT IN-PROGRESS: ${productName.toUpperCase()}...`; status.style.color = '#fbbf24'; }
+            setTimeout(() => { row.classList.remove('scanning'); row.style.background = 'rgba(16, 185, 129, 0.1)'; if(status) { status.innerText = `AUDIT COMPLETE: ${productName.toUpperCase()} VERIFIED`; status.style.color = '#10b981'; } setTimeout(() => { row.style.background = 'rgba(255,255,255,0.02)'; }, 1000); }, 1500);
+        };
+
+        // --- DASHBOARD RENDERING ---
         async function fetchData() {
             try {
-                if (!supabase) throw new Error();
-                const response = await fetch('/api/executive');
-                const data = await response.json();
-                globalProductData = data.products || defaultData.products;
-                updateDashboard(data);
-            } catch (e) {
-                globalProductData = defaultData.products;
-                updateDashboard(defaultData);
-            }
+                let rawData;
+                if (window.parent && window.parent.supabase) {
+                    const { data: { session } } = await window.parent.supabase.auth.getSession();
+                    const headers = session ? { 'Authorization': `Bearer ${session.access_token}` } : {};
+                    const response = await fetch('/api/executive', { headers });
+                    if (response.ok) { const json = await response.json(); rawData = json.data; }
+                }
+                if (!rawData || !rawData.kpis) throw new Error('Using defaults');
+                lastFetchedData = rawData; updateDashboard(rawData);
+            } catch (e) { lastFetchedData = defaultData; updateDashboard(defaultData); }
         }
 
         function updateDashboard(data) {
+            const isKsh = currentCurrency === 'KSh'; const prefix = isKsh ? 'KSh ' : '$';
+            const conv = (val) => isKsh ? parseFloat(val) : (parseFloat(val) * 1000 / EX_RATE);
+            const suffix = isKsh ? 'B' : 'M';
+            
             const configs = [
-                { el: document.querySelector('.north-star-card .card-value'), val: data.kpis.marketValue.value, pre: '$', suf: 'M' },
-                { el: document.getElementById('arr-display'), val: data.kpis.arr.value, pre: '$', suf: 'M' },
-                { el: document.querySelector('[data-suffix="%"]'), val: data.kpis.momGrowth.value, pre: '', suf: '%' },
-                { el: document.querySelector('[data-suffix="k"]'), val: data.kpis.dau.value, pre: '', suf: 'k' }
+                { id: 'val-market', val: conv(data.kpis.marketValue.value), pre: prefix, suf: suffix },
+                { id: 'val-arr', val: conv(data.kpis.arr.value), pre: prefix, suf: suffix },
+                { id: 'val-growth', val: data.kpis.momGrowth.value, pre: '', suf: '%' },
+                { id: 'val-dau', val: data.kpis.dau.value, pre: '', suf: 'k' }
             ];
-            configs.forEach(k => { if(k.el) animateValue(k.el, 0, k.val, 2000, k.pre, k.suf); });
-
-            renderTable(globalProductData);
-            renderSignals(data.signals);
-            initCharts(data.revenueChart);
+            configs.forEach(k => { const el = document.getElementById(k.id); if(el) animateValue(el, 0, k.val, 2000, k.pre, k.suf); });
+            
+            renderTable(data.products || defaultData.products);
+            renderSignals(data.signals || defaultData.signals);
+            initCharts(data);
             initEliteEffects();
             document.querySelectorAll('.sparkline-container').forEach(drawSparkline);
         }
 
         function animateValue(obj, start, end, duration, pre, suf) {
-            let startT = null;
-            const step = (t) => {
-                if (!startT) startT = t;
-                const progress = Math.min((t - startT) / duration, 1);
-                obj.innerText = pre + (progress * (end - start) + start).toFixed(1) + suf;
-                if (progress < 1) window.requestAnimationFrame(step);
-            };
+            if (isNaN(end)) end = 0; let startT = null;
+            const step = (t) => { if (!startT) startT = t; const progress = Math.min((t - startT) / duration, 1); const currentVal = (progress * (end - start) + start); obj.innerText = pre + (currentVal > 100 ? Math.floor(currentVal).toLocaleString() : currentVal.toFixed(1)) + suf; if (progress < 1) window.requestAnimationFrame(step); };
             window.requestAnimationFrame(step);
         }
 
         function renderTable(products) {
-            document.getElementById('product-table-body').innerHTML = products.map((p, i) => `
-                <tr class="product-row" onclick="this.classList.toggle('active')">
-                    <td><strong>${p.name}</strong></td><td>${p.category}</td>
-                    <td><span class="badge badge-${p.status==='Healthy'?'success':'warning'}">${p.status}</span></td>
-                    <td>${p.traction}</td>
+            const isKsh = currentCurrency === 'KSh'; const tbody = document.getElementById('product-table-body'); if (!tbody) return;
+            tbody.innerHTML = (products || []).map((p, i) => {
+                const ltvRaw = p.ltv?.toString().replace(/[^\d.]/g, '') || 1; const cacRaw = p.cac?.toString().replace(/[^\d.]/g, '') || 0.2;
+                const ltv = isKsh ? (p.ltv || 'KSh 1M') : ('$' + (parseFloat(ltvRaw) * 1000 / EX_RATE).toFixed(1) + 'k');
+                const cac = isKsh ? (p.cac || 'KSh 200k') : ('$' + (parseFloat(cacRaw) * 1000 / EX_RATE).toFixed(1) + 'k');
+                return `
+                <tr class="product-row" id="row-${i}" onclick="this.classList.toggle('active')">
+                    <td><div class="row-scan-overlay"></div><strong style="color:var(--text-main)">${p.name}</strong></td>
+                    <td style="color:var(--text-muted)">${p.category}</td>
+                    <td><span class="badge badge-success pulse-health">${p.status}</span></td>
+                    <td style="color:var(--text-main); font-weight:800;">${p.traction}</td>
                 </tr>
                 <tr class="expansion-slot">
-                    <td colspan="4"><div style="display:flex; justify-content:space-between; padding:10px; font-size:0.7rem;">
-                        <span>LTV: <b style="color:var(--primary-color)">${p.ltv || '$10k'}</b></span>
-                        <span>CAC: <b style="color:#ef4444">${p.cac || '$2k'}</b></span>
-                        <button class="btn-mini btn-mini-primary">AUDIT UNIT</button>
+                    <td colspan="4"><div class="unit-eco-box">
+                        <div class="eco-metric"><div class="eco-label">Unit LTV</div><div class="eco-val">${ltv}</div></div>
+                        <div class="eco-metric"><div class="eco-label">Acquisition Cost</div><div class="eco-val" style="color:#ef4444">${cac}</div></div>
+                        <button class="btn-mini btn-mini-primary" onclick="window.triggerAudit('${i}', event)">INITIATE AUDIT</button>
                     </div></td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
         }
 
         function renderSignals(signals) {
-            document.getElementById('signals-list').innerHTML = signals.map((s, i) => `
-                <div class="signal-item" onclick="expandSignal(this, ${i})">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <span class="impact-badge ${s.type==='rocket'?'impact-win':'impact-high'} decode-target" data-value="${s.type==='rocket'?'+$1.2M':'-$2.4M'}">---</span>
-                        <div class="confidence-ring decode-target" data-value="${s.type==='rocket'?'94%':'88%'}">00%</div>
-                    </div>
-                    <div style="font-weight:800; font-size:0.75rem;">${s.title}</div>
+            const list = document.getElementById('signals-list'); if (!list) return;
+            const filter = document.getElementById('signal-filter')?.value || 'all';
+            const isKsh = currentCurrency === 'KSh';
+            const filtered = (signals || []).filter(s => filter === 'all' || s.type === filter);
+            list.innerHTML = filtered.map((s, i) => {
+                let impact = s.type==='rocket'?'+KSh 120M':'-KSh 240M'; if (!isKsh) impact = s.type==='rocket'?'+$0.9M':'-$1.8M';
+                return `<div class="signal-item" onclick="window.expandSignal(this, ${i})">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span class="impact-badge ${s.type==='rocket'?'impact-win':'impact-high'} decode-target" data-value="${impact}">---</span><div class="confidence-ring decode-target" data-value="${s.type==='rocket'?'94%':'88%'}">00%</div></div>
+                    <div style="font-weight:800; font-size:0.75rem; color:var(--text-main);">${s.title}</div>
                     <p style="font-size:0.65rem; color:var(--text-muted);">${s.description}</p>
                     <div class="tactical-playbook" id="playbook-${i}">
-                        <div style="font-size:0.5rem; font-weight:900; color:var(--primary-color); margin-bottom:5px;">NEURAL PLAYBOOK:</div>
-                        ${(s.playbook || ['Mitigation Protocol']).map(step => `<div class="playbook-step" style="opacity:0;"><i class="fas fa-bolt"></i> <span class="type-target" data-text="${step}"></span></div>`).join('')}
+                        <div style="font-size:0.5rem; font-weight:900; color:var(--primary-color); margin-bottom:8px;">NEURAL PLAYBOOK [KE]:</div>
+                        ${(s.playbook || []).map(step => `<div class="playbook-step" style="opacity:0; display:flex; align-items:center; gap:8px;"><i class="fas fa-bolt" style="font-size:0.5rem;"></i><span class="type-target" data-text="${step}"></span></div>`).join('')}
+                        <button class="btn-mini btn-mini-primary" style="width:100%; margin-top:10px;" onclick="window.deployStrategy('${s.title}', event)">DEPLOY STRATEGY</button>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
             document.querySelectorAll('.decode-target').forEach(el => scrambleText(el, el.getAttribute('data-value')));
         }
 
-        function expandSignal(el, idx) {
-            if (!el.classList.contains('expanded')) {
-                el.classList.add('expanded');
-                el.querySelectorAll('.playbook-step').forEach((s, i) => {
-                    setTimeout(() => { s.style.opacity = '1'; typeWriter(s.querySelector('.type-target'), s.querySelector('.type-target').dataset.text); }, i * 500);
-                });
-            } else el.classList.remove('expanded');
+        function scrambleText(el, final) { let iter = 0; const interval = setInterval(() => { el.innerText = final.split('').map((c, i) => i < iter ? final[i] : '0123456789ABCDEF'[Math.floor(Math.random()*16)]).join(''); if (iter >= final.length) clearInterval(interval); iter += 1/3; }, 30); }
+
+        function initCharts(data) {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark'; const color = isDark ? '#9ca3af' : '#4b5563';
+            const revCtx = document.getElementById('revenueChart').getContext('2d'); if (myRevChart) myRevChart.destroy();
+            const revData = data.revenueChart || defaultData.revenueChart;
+            const datasets = [ { label: 'Actual', data: revData.data, borderColor: '#10b981', fill: true, tension: 0.4, pointBackgroundColor: '#10b981' } ];
+            myRevChart = new Chart(revCtx, { type: 'line', data: { labels: revData.labels, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: color } }, x: { ticks: { color: color } } } } });
+
+            const radarCtx = document.getElementById('radarChart').getContext('2d'); if (myRadarChart) myRadarChart.destroy();
+            const labels = { market: ['County Reach', 'M-Pesa Synergy', 'NSE Velocity', 'Retention', 'Presence'], ops: ['Uptime', 'API Latency', 'KRA Compliance', 'Hub Health', 'Scale'] };
+            const currentBaseData = [...hubData[currentHub][currentStrategy]];
+            myRadarChart = new Chart(radarCtx, { type: 'radar', data: { labels: labels[currentStrategy], datasets: [ { label: 'Status', data: currentBaseData, borderColor: currentStrategy === 'market' ? '#10b981' : '#3b82f6', backgroundColor: currentStrategy === 'market' ? 'rgba(16,185,129,0.2)' : 'rgba(59,130,246,0.2)', borderWidth: 3 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 100, ticks: { display: false }, pointLabels: { color: color, font: { weight: '700' } } } } } });
         }
 
-        function initCharts(revData) {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const color = isDark ? '#9ca3af' : '#4b5563';
-            
-            const ctx = document.getElementById('revenueChart').getContext('2d');
-            if (myRevChart) myRevChart.destroy();
-            myRevChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: revData ? revData.labels : ['Jan','Feb','Mar','Apr','May','Jun','Jul'],
-                    datasets: [{ label: 'Revenue', data: revData ? revData.data : [8,9,10,11,12,13,14], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4 }]
-                },
-                options: { 
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { y: { ticks: { color: color } }, x: { ticks: { color: color } } },
-                    onClick: (e, elements) => { if(elements.length > 0) drillDownToMonth(myRevChart.data.labels[elements[0].index]); }
-                }
-            });
+        function initEliteEffects() { document.querySelectorAll('.card').forEach(card => { card.onmousemove = (e) => { const rect = card.getBoundingClientRect(); const x = e.clientX - rect.left, y = e.clientY - rect.top; card.style.transform = `rotateX(${(y - rect.height/2)/rect.height*-10}deg) rotateY(${(x - rect.width/2)/rect.width*10}deg) translateY(-5px)`; card.style.setProperty('--mouse-x', `${(x/rect.width)*100}%`); card.style.setProperty('--mouse-y', `${(y/rect.height)*100}%`); }; card.onmouseleave = () => card.style.transform = 'rotateX(0) rotateY(0) translateY(0)'; }); }
+        function drawSparkline(c) { c.innerHTML = `<svg viewBox="0 0 200 40" preserveAspectRatio="none" style="width:100%; height:100%;"><path d="M0 30 L40 10 L80 35 L120 5 L160 25 L200 15" stroke="${c.dataset.color || '#10b981'}" stroke-width="2" fill="none" /></svg>`; }
 
-            const radarCtx = document.getElementById('radarChart').getContext('2d');
-            const presets = { market: [85, 92, 78, 15, 88], ops: [99, 82, 70, 88, 94] };
-            const labels = { market: ['Growth','Retention','Profit','Churn','Presence'], ops: ['Uptime','Latency','Cost','Efficiency','Scale'] };
-            
-            if (myRadarChart) myRadarChart.destroy();
-            myRadarChart = new Chart(radarCtx, {
-                type: 'radar',
-                data: {
-                    labels: labels.market,
-                    datasets: [{ data: presets.market, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.2)', borderWidth: 3 }]
-                },
-                options: { 
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { r: { ticks: { display: false }, pointLabels: { color: color } } },
-                    onHover: (e, active) => {
-                        const diag = document.getElementById('radar-diagnosis');
-                        if (active.length > 0) {
-                            const i = active[0].index;
-                            diag.innerText = `${myRadarChart.data.labels[i]}: ${myRadarChart.data.datasets[0].data[i]}% - Strategic Optimization Priority`;
-                        }
-                    }
-                }
-            });
+        function updateSim() { 
+            const r = parseInt(sliderEls.retention.value), a = parseInt(sliderEls.acquisition.value);
+            const scenario = document.getElementById('scenario-selector').value;
+            let mult = 1.0; if (scenario === 'recession') mult = 0.85; if (scenario === 'boom') mult = 1.2; if (scenario === 'mpesa') mult = 1.35;
+            document.getElementById('retention-label').innerText = `+${r}%`; document.getElementById('acquisition-label').innerText = `+${a}%`;
+            const isKsh = currentCurrency === 'KSh'; const baseArr = isKsh ? 1.4 : (1.4 * 1000 / EX_RATE); const prefix = isKsh ? 'KSh ' : '$'; const suffix = isKsh ? 'B' : 'M';
+            const g = ((baseArr * (r/100) * 1.8) + (baseArr * (a/100) * 1.2)) * mult;
+            document.getElementById('sim-result').innerText = `+${prefix}${g.toFixed(2)}${suffix}`;
+            const risk = (a * 2) - (r * 1.5); const riskBar = document.getElementById('risk-bar'); const riskVal = document.getElementById('risk-val');
+            if (risk < 20) { riskBar.style.width = '20%'; riskBar.style.background = '#10b981'; riskVal.innerText = 'LOW'; riskVal.style.color = '#10b981'; } 
+            else if (risk < 50) { riskBar.style.width = '50%'; riskBar.style.background = '#f59e0b'; riskVal.innerText = 'MODERATE'; riskVal.style.color = '#f59e0b'; } 
+            else { riskBar.style.width = '90%'; riskBar.style.background = '#ef4444'; riskVal.innerText = 'HIGH'; riskVal.style.color = '#ef4444'; }
+            initCharts(lastFetchedData);
+        }
 
-            document.querySelectorAll('.strategy-toggles button').forEach(btn => {
-                btn.onclick = () => {
-                    const strat = btn.dataset.strategy;
-                    document.querySelectorAll('.strategy-toggles button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    myRadarChart.data.labels = labels[strat];
-                    myRadarChart.data.datasets[0].data = presets[strat];
-                    myRadarChart.update();
+        // --- THEME SYNC ---
+        window.addEventListener('message', (e) => { if(e.data.type === 'THEME_UPDATE') { document.documentElement.setAttribute('data-theme', e.data.theme); updateDashboard(lastFetchedData); } });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const focusBtn = document.getElementById('focus-mode-btn');
+            if (focusBtn) {
+                focusBtn.onclick = () => {
+                    console.log("FOCUS TOGGLED");
+                    document.body.classList.toggle('war-room-active');
+                    document.getElementById('signals-section').classList.toggle('focus-mode');
+                    focusBtn.innerText = document.getElementById('signals-section').classList.contains('focus-mode') ? 'EXIT' : 'FOCUS';
                 };
-            });
-        }
-
-        function drillDownToMonth(month) {
-            const filtered = globalProductData.filter((p, i) => (i + month.length) % 2 === 0);
-            renderTable(filtered);
-            document.getElementById('revenue-insight').innerHTML = `FILTERED: ${month.toUpperCase()}. <a href="#" onclick="resetTable()" style="color:var(--primary-color)">[RESET]</a>`;
-        }
-        function resetTable() { renderTable(globalProductData); document.getElementById('revenue-insight').innerText = "Click data points to filter products."; }
-
-        // Simulator
-        const sliders = { retention: document.getElementById('retention-slider'), acquisition: document.getElementById('acquisition-slider'), churn: document.getElementById('churn-slider') };
-        function updateSim() {
-            const r = parseInt(sliders.retention.value), a = parseInt(sliders.acquisition.value), c = parseInt(sliders.churn.value);
-            document.getElementById('retention-label').innerText = `+${r}%`;
-            document.getElementById('acquisition-label').innerText = `+${a}%`;
-            document.getElementById('churn-label').innerText = `-${c}%`;
-            const g = (14.2 * (r/100) * 1.8) + (14.2 * (a/100) * 1.2) + (14.2 * (c/100) * 2.1);
-            document.getElementById('sim-result').innerText = `+$${g.toFixed(1)}M`;
-            document.getElementById('sim-percentage').innerText = `+${((g/14.2)*100).toFixed(1)}% Improvement`;
-        }
-        Object.values(sliders).forEach(s => s.addEventListener('input', updateSim));
-        document.getElementById('reset-sim').onclick = () => { Object.values(sliders).forEach(s => s.value = 0); updateSim(); };
-        document.querySelectorAll('.preset-btn').forEach(b => b.onclick = () => {
-            if(b.dataset.preset==='blitz'){ sliders.retention.value=5; sliders.acquisition.value=45; sliders.churn.value=2; }
-            else { sliders.retention.value=15; sliders.acquisition.value=5; sliders.churn.value=8; }
-            updateSim();
+            }
         });
-
-        // Focus Mode
-        document.getElementById('focus-mode-btn').onclick = () => { document.body.classList.toggle('war-room-active'); document.getElementById('signals-section').classList.toggle('focus-mode'); };
-
-        function scrambleText(el, final) {
-            let iter = 0;
-            const interval = setInterval(() => {
-                el.innerText = final.split('').map((c, i) => i < iter ? final[i] : '0123456789ABCDEF'[Math.floor(Math.random()*16)]).join('');
-                if (iter >= final.length) clearInterval(interval);
-                iter += 1/3;
-            }, 30);
-        }
-        function typeWriter(el, text) {
-            el.innerHTML = ''; let i = 0;
-            const timer = setInterval(() => { if (i < text.length) el.innerHTML += text.charAt(i++); else clearInterval(timer); }, 30);
-        }
-        function initEliteEffects() {
-            document.querySelectorAll('.card').forEach(card => {
-                card.onmousemove = (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left, y = e.clientY - rect.top;
-                    card.style.transform = `rotateX(${(y - rect.height/2)/rect.height*-10}deg) rotateY(${(x - rect.width/2)/rect.width*10}deg) translateY(-5px)`;
-                    card.style.setProperty('--mouse-x', `${(x/rect.width)*100}%`);
-                    card.style.setProperty('--mouse-y', `${(y/rect.height)*100}%`);
-                };
-                card.onmouseleave = () => card.style.transform = 'rotateX(0) rotateY(0) translateY(0)';
-            });
-        }
-        function drawSparkline(c) {
-            c.innerHTML = `<svg viewBox="0 0 200 40" preserveAspectRatio="none" style="width:100%; height:100%;"><path d="M0 30 L40 10 L80 35 L120 5 L160 25 L200 15" stroke="${c.dataset.color || '#10b981'}" stroke-width="2" fill="none" /></svg>`;
-        }
-
-        document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 </body>
 </html>

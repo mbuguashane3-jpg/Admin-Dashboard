@@ -7,7 +7,7 @@ export interface AuthRequest extends Request {
   role?: string;
 }
 
-export async function verifyUser(req: AuthRequest, res: Response, next: NextFunction) {
+export async function verifyUser(req: AuthRequest, res: Response, next: NextFunction): Promise<void | Response> {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     console.log('No auth header found');
@@ -51,7 +51,7 @@ export async function verifyUser(req: AuthRequest, res: Response, next: NextFunc
   }
 }
 
-export function adminOnly(req: AuthRequest, res: Response, next: NextFunction) {
+export function adminOnly(req: AuthRequest, res: Response, next: NextFunction): void | Response {
   if (req.role !== 'admin') {
     console.warn(`Unauthorized access attempt by ${req.user?.email} (Role: ${req.role})`);
     return res.status(403).json({ success: false, message: 'Access Denied: Admin Privileges Required' });

@@ -1,13 +1,20 @@
 {
-  "employees": [
-    { "id": "EMP-001", "name": "Employee A", "department": "Engineering", "amount": 8500, "status": "PENDING", "hash": "---" },
-    { "id": "EMP-002", "name": "Jane Smith", "department": "Marketing", "amount": 7200, "status": "SETTLED", "hash": "0x7f2a...9b1c" },
-    { "id": "EMP-003", "name": "Michael Chen", "department": "Sales", "amount": 6800, "status": "SETTLED", "hash": "0x3e1d...4a2f" },
-    { "id": "EMP-004", "name": "Sarah Johnson", "department": "Operations", "amount": 7500, "status": "DISBURSED", "hash": "0x9b8c...1e2d" }
-  ],
   "stats": {
-    "totalDisbursed": 21500,
-    "pendingSettlement": 1,
-    "health": 98
-  }
+    "totalDisbursed": 8450000,
+    "pendingSettlement": 12,
+    "health": 99
+  },
+  "employees": [
+    { "id": "EMP001", "name": "Kamau Otieno", "department": "Nairobi HQ", "amount": 285000, "status": "SETTLED", "hash": "MPESA_TRX_842..." },
+    { "id": "EMP002", "name": "Muthoni Njeri", "department": "Coast Node", "amount": 320000, "status": "PENDING", "hash": "---" },
+    { "id": "EMP003", "name": "Ochieng Juma", "department": "Western Hub", "amount": 145000, "status": "SETTLED", "hash": "MPESA_TRX_915..." },
+    { "id": "EMP004", "name": "Amina Ali", "department": "Rift Valley", "amount": 110000, "status": "DISBURSED", "hash": "MPESA_TRX_728..." },
+    { "id": "EMP005", "name": "Wanjiku Kamau", "department": "Central Node", "amount": 195000, "status": "PENDING", "hash": "---" }
+  ],
+  "deductions": [
+    { "label": "PAYE (Tax)", "amount": 1850000, "color": "#ef4444" },
+    { "label": "NHIF / SHIF", "amount": 85000, "color": "#3b82f6" },
+    { "label": "NSSF (Tier I/II)", "amount": 125000, "color": "#f59e0b" },
+    { "label": "Housing Levy", "amount": 90000, "color": "#8b5cf6" }
+  ]
 }

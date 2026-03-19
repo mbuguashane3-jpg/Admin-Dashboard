@@ -1,41 +1,39 @@
 {
   "logs": [
-    { "level": "INFO", "message": "Nexus ERP Node-04: Handshake Successful (2ms)" },
-    { "level": "WARN", "message": "High Latency detected in Region: US-WEST-2" },
-    { "level": "INFO", "message": "Database Backup completed: 4.2TB written" },
-    { "level": "INFO", "message": "Cache Optimization Triggered by Global Load Balancer" }
+    { "level": "INFO", "message": "Nairobi ICD Node stabilized" },
+    { "level": "WARN", "message": "High load detected on Mombasa Port Terminal" },
+    { "level": "INFO", "message": "Automated backup: Eldoret Hub completed" }
   ],
   "kpis": {
-    "automations": { "value": 142, "label": "ACTIVE AUTOMATIONS", "status": "100% Operational" },
-    "successRate": { "value": 99.8, "suffix": "%", "label": "SYSTEM SUCCESS RATE", "status": "Optimal Performance" },
-    "latency": { "value": 142, "suffix": "ms", "label": "AVERAGE SYSTEM LATENCY", "trend": -12 }
+    "automations": { "value": 142, "status": "100% Operational" },
+    "successRate": { "value": 99.9, "suffix": "%", "status": "National Uptime" },
+    "latency": { "value": 28, "suffix": "ms", "trend": 12 }
   },
   "nodes": [
-    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" },
-    { "status": "healthy" }, { "status": "warning" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" },
-    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" },
-    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "warning" },
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" },
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" },
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "warning" },
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" },
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" },
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" },
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "warning" },
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" },
+    { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }, { "status": "healthy" }
   ],
-  "serverMatrix": [
-    { "x": 45, "y": 120, "r": 5, "label": "Node-01" },
-    { "x": 75, "y": 310, "r": 12, "label": "Node-02 (High Load)" },
-    { "x": 30, "y": 95, "r": 4, "label": "Node-03" },
-    { "x": 85, "y": 420, "r": 15, "label": "Node-04 (CRITICAL)" },
-    { "x": 55, "y": 150, "r": 6, "label": "Node-05" },
-    { "x": 20, "y": 80, "r": 4, "label": "Node-06" }
+  "workflows": [
+    { "name": "M-Pesa Ledger Sync", "product": "Fintech Hub", "time": "0.8s", "status": "Optimal" },
+    { "name": "National ID Auth", "product": "Gov-Sync", "time": "320ms", "status": "Optimal" },
+    { "name": "Port Logistics Scrub", "product": "Logistics-Flow", "time": "3.4s", "status": "Warning" }
   ],
   "loadChart": {
     "labels": ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "23:59"],
-    "data": [35, 20, 65, 85, 75, 90, 45]
+    "data": [45, 25, 75, 95, 85, 98, 55]
   },
-  "workflows": [
-    { "name": "Enterprise Data Sync", "product": "Nexus ERP", "time": "1.2s", "status": "Optimal" },
-    { "name": "Global Payment Hook", "product": "Internal Suite", "time": "0.4s", "status": "Optimal" },
-    { "name": "Security Threat Scan", "product": "DataGuard Pro", "time": "4.5s", "status": "High Load" },
-    { "name": "Automated Reporting", "product": "Executive Suite", "time": "0.8s", "status": "Optimal" }
-  ],
-  "distChart": {
-    "labels": ["Nexus ERP", "DataGuard", "CloudSync", "Streamline", "Support"],
-    "data": [85, 95, 60, 40, 70]
-  }
+  "serverMatrix": [
+    { "x": 45, "y": 120, "r": 8, "label": "Nairobi-1" },
+    { "x": 75, "y": 310, "r": 15, "label": "Mombasa-Main" },
+    { "x": 30, "y": 95, "r": 6, "label": "Kisumu-Edge" },
+    { "x": 60, "y": 200, "r": 10, "label": "Eldoret-Hub" }
+  ]
 }

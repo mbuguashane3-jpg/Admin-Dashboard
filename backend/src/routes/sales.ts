@@ -39,7 +39,7 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/add-transaction', async (req: Request, res: Response) => {
+router.post('/add-transaction', async (req: Request, res: Response): Promise<void | Response> => {
   const data = await readData();
   if (!data) return res.status(500).json({ error: 'Failed to read data' });
 

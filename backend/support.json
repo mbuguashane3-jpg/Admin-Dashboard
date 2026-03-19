@@ -1,35 +1,31 @@
 {
   "tickets": [
-    { "text": "New Ticket: Authentication Failure (Nexus ERP) - High Priority", "type": "new" },
-    { "text": "Resolved: Billing Inquiry (CloudSync) - Resolution Time: 12m", "type": "resolved" },
-    { "text": "New Ticket: API Integration Query (DataGuard Pro) - Normal Priority", "type": "new" }
+    { "type": "new", "text": "New Ticket: M-Pesa sync delay - Juma_842" },
+    { "type": "resolved", "text": "Resolved: KRA Audit access - Nairobi Enterprise_12" },
+    { "type": "new", "text": "Urgent: Latency issues in Mombasa ICD Node" }
   ],
   "kpis": {
-    "sentiment": { "value": 4.8, "label": "CUSTOMER SENTIMENT" },
-    "resolutionGoal": { "value": 85, "suffix": "%", "label": "TODAY'S RESOLUTION GOAL" },
-    "responseTime": { "value": 14, "suffix": "m", "label": "RESPONSE LOAD (24H)" },
-    "resolutionRate": { "value": 94.2, "suffix": "%", "label": "RESOLUTION RATE", "trend": 1.5 }
+    "sentiment": { "value": 4.8 },
+    "resolutionGoal": { "value": 96 },
+    "responseTime": { "value": 8 },
+    "resolutionRate": { "value": 98.4, "trend": 2.1 }
   },
-  "sentimentAnalysis": {
-    "labels": ["Delighted", "Satisfied", "Neutral", "Frustrated"],
-    "data": [65, 22, 10, 3]
-  },
-  "heatmap": [
-    "low", "low", "med", "high", "high", "med", "low", "low",
-    "low", "med", "high", "high", "med", "low", "low", "low",
-    "low", "med", "high", "high", "med", "low", "low", "low"
+  "heatmap": ["low", "low", "low", "low", "low", "low", "low", "low", "low", "high", "high", "high", "high", "high", "high", "high", "high", "med", "med", "low", "low", "low", "low", "low"],
+  "criticalTickets": [
+    { "customer": "Safaricom B2B", "issue": "M-Pesa Ledger Latency", "priority": "Critical", "waitTime": "2m" },
+    { "customer": "Kamau Muthoni", "issue": "County Portal Auth", "priority": "High", "waitTime": "12m" },
+    { "customer": "Coast Logistics", "issue": "Port Node Desync", "priority": "High", "waitTime": "18m" }
+  ],
+  "retentionSignals": [
+    { "type": "smile", "text": "Positive: SME satisfaction in Westlands", "status": "Healthy", "color": "success" },
+    { "type": "user-minus", "text": "Churn Alert: Low activity in Nakuru hub", "status": "At Risk", "color": "danger" }
   ],
   "satisfactionChart": {
     "labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    "data": [4.2, 4.4, 4.1, 4.6, 4.8, 4.7, 4.8]
+    "data": [4.5, 4.6, 4.4, 4.7, 4.9, 4.8, 4.8]
   },
-  "criticalTickets": [
-    { "customer": "Global Logistics", "issue": "Database Synchronization Error", "priority": "Critical", "waitTime": "12m" },
-    { "customer": "TechSolutions Ltd", "issue": "User Access Restriction", "priority": "High", "waitTime": "24m" },
-    { "customer": "Innovate Soft", "issue": "API Connection Timeout", "priority": "High", "waitTime": "35m" }
-  ],
-  "retentionSignals": [
-    { "text": "High Engagement in Security Training", "status": "POSITIVE", "type": "heart" },
-    { "text": "Inactive for > 14 days", "status": "RISK", "type": "user-slash", "color": "warning" }
-  ]
+  "sentimentAnalysis": {
+    "labels": ["Delighted", "Satisfied", "Neutral", "Frustrated"],
+    "data": [72, 18, 8, 2]
+  }
 }

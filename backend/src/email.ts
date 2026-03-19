@@ -3,18 +3,18 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function sendCriticalAlert(ticket: { customer: string, issue: string, priority: string }) {
-  if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY is missing. Skipping email.');
+  if (!resend) {
+    console.warn('RESEND_API_KEY is missing. Skipping email alert.');
     return;
   }
 
   try {
     const { data, error } = await resend.emails.send({
       from: 'Prometheus Admin <onboarding@resend.dev>',
-      to: ['mbuguashane3@gmail.com'], 
+      to: [process.env.ALERT_EMAIL || 'mbuguashane3@gmail.com'], 
       subject: `🚨 CRITICAL TICKET: ${ticket.customer}`,
       html: `
         <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ef4444; border-radius: 10px;">

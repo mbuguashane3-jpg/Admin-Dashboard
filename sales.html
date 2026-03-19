@@ -60,24 +60,24 @@
     <div class="skeleton-overlay"><div class="skeleton-pulse"></div></div>
 
     <div class="revenue-ticker-container">
-        <div class="ticker-label">REAL-TIME REVENUE PULSE</div>
+        <div class="ticker-label">REAL-TIME REVENUE PULSE [KE]</div>
         <div class="ticker-content">
-            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> New Enterprise Sale: Nexus ERP <strong>+$4,500</strong></span>
-            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> Annual Renewal: DataGuard Pro <strong>+$299</strong></span>
-            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> Product Upgrade: CloudSync <strong>+$1,200</strong></span>
-            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> New Software Sale: Streamline Flow <strong>+$450</strong></span>
+            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> New Enterprise Sale: M-Pesa B2B Sync <strong>+KSh 450,000</strong></span>
+            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> County Ledger Renewal: Mombasa <strong>+KSh 15,500</strong></span>
+            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> Product Upgrade: CloudSync <strong>+KSh 120,000</strong></span>
+            <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> New Software Sale: Westlands Hub <strong>+KSh 45,000</strong></span>
         </div>
     </div>
 
     <header class="header-section animate-fade-in stagger-1">
-        <h1>Sales Revenue Dashboard</h1>
-        <p>Comprehensive tracking of revenue inflow and customer conversion performance.</p>
+        <h1>Kenyan Sales Revenue</h1>
+        <p>Comprehensive tracking of revenue inflow and customer conversion performance across all counties.</p>
     </header>
 
     <section class="stats-grid">
         <div class="card animate-fade-in stagger-2">
             <div class="card-title">CURRENT DAILY SALES <i class="fas fa-cash-register"></i></div>
-            <div class="card-value" data-target="12450" data-prefix="$">0</div>
+            <div class="card-value" data-target="1245000" data-prefix="KSh ">0</div>
             <div class="card-trend trend-up"><i class="fas fa-arrow-up"></i> 8.2% increase</div>
         </div>
         <div class="card animate-fade-in stagger-3">
@@ -87,12 +87,12 @@
         </div>
         <div class="card animate-fade-in stagger-4">
             <div class="card-title">AVERAGE ORDER VALUE <i class="fas fa-shopping-bag"></i></div>
-            <div class="card-value" data-target="1250" data-prefix="$">0</div>
+            <div class="card-value" data-target="12500" data-prefix="KSh ">0</div>
             <div class="card-trend trend-down"><i class="fas fa-arrow-down"></i> 2% decrease</div>
         </div>
         <div class="card projection-card animate-fade-in stagger-5">
             <div class="card-title">30-DAY REVENUE PROJECTION <i class="fas fa-magic"></i></div>
-            <div id="projected-value" class="card-value" style="font-size: 1.8rem;">$47,310</div>
+            <div id="projected-value" class="card-value" style="font-size: 1.8rem;">KSh 4,731,000</div>
             <div style="margin-top: 20px;">
                 <label style="font-size: 0.7rem; font-weight: 700; opacity: 0.8;">ADJUST CONVERSION PARAMETER:</label>
                 <input type="range" id="conv-slider" min="1" max="10" step="0.1" value="3.8" style="width: 100%;">
@@ -226,7 +226,7 @@
                 if (data.ticker) {
                     const tickerContent = document.querySelector('.ticker-content');
                     tickerContent.innerHTML = data.ticker.map(t => `
-                        <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> ${t.text} <strong>+$${t.amount.toLocaleString()}</strong></span>
+                        <span class="ticker-item"><i class="fas fa-check-circle" style="color:var(--primary-color);"></i> ${t.text} <strong>+$$${t.amount.toLocaleString()}</strong></span>
                     `).join('');
                 }
 

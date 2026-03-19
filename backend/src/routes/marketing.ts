@@ -39,7 +39,7 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/add-acquisition', async (req: Request, res: Response) => {
+router.post('/add-acquisition', async (req: Request, res: Response): Promise<void | Response> => {
   const data = await readData();
   if (!data) return res.status(500).json({ error: 'Failed to read data' });
 
@@ -52,7 +52,7 @@ router.post('/add-acquisition', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/add-content', async (req: Request, res: Response) => {
+router.post('/add-content', async (req: Request, res: Response): Promise<void | Response> => {
   const data = await readData();
   if (!data) return res.status(500).json({ error: 'Failed to read data' });
 

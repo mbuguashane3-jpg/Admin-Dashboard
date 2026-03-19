@@ -1,34 +1,28 @@
 {
   "kpis": {
-    "profitMargin": { "value": 24.8, "suffix": "%", "label": "NET PROFIT MARGIN", "trend": 1.2 },
-    "runway": { "value": 14.5, "unit": "MONTHS", "label": "CASH RUNWAY STABILITY", "percentage": 75 },
-    "operatingCosts": { "value": 842, "prefix": "$", "suffix": "k", "label": "MONTHLY OPERATING COSTS", "status": "Efficient" },
-    "auditScore": { "value": 92, "suffix": "%", "label": "AUDIT READINESS SCORE" }
+    "profitMargin": { "value": 28.4, "suffix": "%" },
+    "runway": { "value": 24, "unit": "MONTHS", "percentage": 85 },
+    "operatingCosts": { "value": 12.4, "prefix": "KSh ", "suffix": "M" },
+    "auditScore": { "value": 98 }
+  },
+  "cashFlow": [
+    { "label": "Total Revenue (KSh)", "value": 45.2, "unit": "M", "prefix": "KSh ", "type": "inflow" },
+    { "label": "Operating Spend", "value": 12.4, "unit": "M", "prefix": "KSh ", "type": "outflow" },
+    { "label": "Treasury Reserve", "value": 32.8, "unit": "M", "prefix": "KSh ", "total": true }
+  ],
+  "risks": [
+    { "type": "shield-alt", "title": "KRA Compliance", "level": "Synchronized", "color": "success" },
+    { "type": "exchange-alt", "title": "KES Volatility", "level": "Medium Risk", "color": "warning" },
+    { "type": "university", "title": "Central Bank Nodes", "level": "Stable", "color": "success" }
+  ],
+  "revenueCostsChart": {
+    "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+    "revenue": [15.1, 18.3, 16.2, 22.5, 28.8, 35.1, 45.2],
+    "costs": [8.0, 8.5, 8.2, 9.0, 8.8, 9.2, 12.4]
   },
   "burnRate": {
     "labels": ["Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-    "burn": [450, 480, 520, 490, 510, 420],
-    "cash": [4.2, 3.8, 3.2, 2.8, 2.4, 2.1],
-    "runway": [18, 16, 14, 13, 12, 11]
-  },
-  "revenueCostsChart": {
-    "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-    "revenue": [1.1, 1.3, 1.2, 1.5, 1.8, 2.1, 2.4],
-    "costs": [0.8, 0.85, 0.82, 0.9, 0.88, 0.92, 0.84]
-  },
-  "optimizations": [
-    { "id": "infra", "label": "Infrastructure Optimization", "impact": 45 },
-    { "id": "sales", "label": "Sales Commission Restructure", "impact": 22 },
-    { "id": "payroll", "label": "Automated Payroll Efficiency", "impact": 18 }
-  ],
-  "cashFlow": [
-    { "label": "Opening Balance", "value": 1.24, "prefix": "$", "unit": "M" },
-    { "label": "Total Inflow", "value": 1.18, "prefix": "+$", "unit": "M", "type": "positive" },
-    { "label": "Total Outflow", "value": 750, "prefix": "-$", "unit": "k", "type": "negative" },
-    { "label": "Closing Balance", "value": 1.67, "prefix": "$", "unit": "M", "total": true }
-  ],
-  "risks": [
-    { "title": "Subscription Churn Increase", "level": "MEDIUM", "type": "clock" },
-    { "title": "Nexus ERP Overrun (+12%)", "level": "LOW", "type": "server", "color": "warning" }
-  ]
+    "burn": [4.5, 4.8, 5.2, 4.9, 5.1, 4.2],
+    "cash": [42.5, 38.2, 32.8, 28.4, 24.1, 21.5]
+  }
 }
